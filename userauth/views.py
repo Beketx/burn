@@ -1,0 +1,366 @@
+import datetime
+import hashlib
+import os
+import random
+
+import datetime as dt
+from datetime import datetime
+from django.core.files.storage import FileSystemStorage
+
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from developer.models import *
+from .models import *
+from .serializers import LoginSerializer, OTPSerializer, PhoneOTPSerializer
+from .serializers import RegistrationSerializer
+
+class RegistrationClientAPIView(APIView):
+    """
+    Registers a new user.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = RegistrationSerializer
+
+    def post(self, request):
+        """
+        Creates a new User object.
+        Username, email, and password are required.
+        Returns a JSON web token.
+        """
+
+
+        data = request.data
+        keys = request.META['HTTP_AUTHORIZATION']
+        keys = keys.split()
+        print(keys[1])
+        objOpt = PhoneOTP.objects.get(key_token=keys[1])
+        if objOpt.email:
+            user = User.objects.get(email=objOpt.email)
+            user.phone = data['phone']
+        elif objOpt.phone:
+            user = User.objects.get(phone=objOpt.phone)
+            user.email = data['email']
+        user.name = data['name']
+        user.surname = data['surname']
+        user.iin = data['iin']
+        user.gender = data['gender']
+        user.work_place = data['work_place']
+        user.birth_date = data['birth_date']
+        city = City.objects.get(id=data['city'])
+        user.city = city
+        user.save()
+        # phone = {'phone': objOpt.phone}
+        # email = {'email': objOpt.email}
+        # keys = {**data, **phone, **email}
+        # serializer = self.serializer_class(data=keys)
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+
+        return Response(
+            status=status.HTTP_201_CREATED,
+        )
+
+class RegistrationDeveloperAPIView(APIView):
+    """
+    Registers a new user.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = RegistrationSerializer
+
+    def post(self, request):
+        """
+        Creates a new User object.
+        Username, email, and password are required.
+        Returns a JSON web token.
+        """
+
+
+        data = request.data
+        keys = request.META['HTTP_AUTHORIZATION']
+        keys = keys.split()
+        print(keys[1])
+        objOpt = PhoneOTP.objects.get(key_token=keys[1])
+        if objOpt.email:
+            user = User.objects.get(email=objOpt.email)
+            user.phone = data['phone']
+        elif objOpt.phone:
+            user = User.objects.get(phone=objOpt.phone)
+            user.email = data['email']
+        user.name = data['name']
+        user.surname = data['surname']
+        user.iin = data['iin']
+        user.gender = data['gender']
+        user.work_place = data['work_place']
+        user.birth_date = data['birth_date']
+        city = City.objects.get(id=data['city'])
+        user.city = city
+        user.save()
+        dev_service = DeveloperService.objects.create(service_title=data['service_title'], service_description=data['service_description'],
+                                                        price=data['price'], price_fix=data['price_fix'])
+        developer = Developer.objects.create(user=user, education=data['education'], about=data['about'],
+                                 work_experience=data['work_experience'], dev_service=dev_service)
+        list_skills = data['skills']
+        split_skills = list_skills.split(",")
+        res = ("".join(map(str, split_skills)))
+        for skill_id in res:
+            developer.skills_id.add(skill_id)
+        list_stacks = data['stacks']
+        split_stacks = list_stacks.split(",")
+        res = ("".join(map(str, split_stacks)))
+        for stack_id in res:
+            developer.stacks_id.add(stack_id)
+
+        """
+        Image Front
+        """
+        date = datetime.today().strftime('%Y-%m-%d')
+        folder = 'media/' + str(date) + '/front_photo/'
+        myfile = request.FILES['front_photo']
+        fileName, fileExtension = os.path.splitext(myfile.name)
+        myfile.name = 'front_photo' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+        url_name = 'media/' + str(date) + '/front_photo/' + str(myfile.name)
+        fs = FileSystemStorage(location=folder)
+        file_name = fs.save(myfile.name, myfile)
+        file_url = fs.url(file_name)
+        timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        images = ImageTab()
+        images.developer = developer
+        image_type = ImageType.objects.get(type_id=1)
+        images.image_type = image_type
+        images.image_url = url_name
+        images.save()
+
+        """
+        Image avatar
+        """
+        date = datetime.today().strftime('%Y-%m-%d')
+        folder = 'media/' + str(date) + '/avatar/'
+        myfile = request.FILES['avatar']
+        fileName, fileExtension = os.path.splitext(myfile.name)
+        myfile.name = 'avatar' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+        url_name = 'media/' + str(date) + '/avatar/' + str(myfile.name)
+        fs = FileSystemStorage(location=folder)
+        file_name = fs.save(myfile.name, myfile)
+        file_url = fs.url(file_name)
+        timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        images = ImageTab()
+        images.developer = developer
+        image_type = ImageType.objects.get(type_id=2)
+        images.image_type = image_type
+        images.image_url = url_name
+        images.save()
+
+        """
+        Image passport
+        """
+        date = datetime.today().strftime('%Y-%m-%d')
+        folder = 'media/' + str(date) + '/passport/'
+        myfile = request.FILES['passport']
+        fileName, fileExtension = os.path.splitext(myfile.name)
+        myfile.name = 'passport' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+        url_name = 'media/' + str(date) + '/passport/' + str(myfile.name)
+        fs = FileSystemStorage(location=folder)
+        file_name = fs.save(myfile.name, myfile)
+        file_url = fs.url(file_name)
+        timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        images = ImageTab()
+        images.developer = developer
+        image_type = ImageType.objects.get(type_id=3)
+        images.image_type = image_type
+        images.image_url = url_name
+        images.save()
+
+        # phone = {'phone': objOpt.phone}
+        # email = {'email': objOpt.email}
+        # keys = {**data, **phone, **email}
+        # serializer = self.serializer_class(data=keys)
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+
+        return Response(
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class LoginAPIView(APIView):
+    """
+    Logs in an existing user.
+    """
+    permission_classes = [AllowAny]
+    serializer_class = LoginSerializer
+
+    def post(self, request):
+        """
+        Checks is user exists.
+        Email and password are required.
+        Returns a JSON web token.
+        """
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class Test(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        name = request.data
+        surname = {'token': 123}
+        fio = {**name, **surname}
+        print(fio)
+        key = request.META['HTTP_AUTHORIZATION']
+        print(key)
+        # user = Token.objects.get(key=key).user
+        return Response({
+            "status": 200
+        })
+
+class ValidatePhoneSendOTP(APIView):
+    # permission_classes = (permissions.AllowAny,)
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        # email = request.data.get('email' , False)
+        phone_number = request.data.get('phone')
+        if phone_number:
+            phone = str(phone_number)
+            # user = User.objects.filter(phone__iexact=phone)
+            # if user.exists():
+            key = send_otp(phone)
+            try:
+                user = User.objects.get(phone=phone)
+                if key:
+                    PhoneOTP.objects.create(
+                        # name = name,
+                        phone=phone,
+                        otp=key,
+                        user_id=user.id
+                    )
+                    # link = f'API-urls'
+                    # requests.get(link)
+                    return Response({
+                        'status': True,
+                        'detail': 'OTP sent successfully.',
+                        'key': key
+                    })
+            except:
+                user = User.objects.create(phone=phone)
+                if key:
+                    PhoneOTP.objects.create(
+                        # name = name,
+                        phone=phone,
+                        otp=key,
+                        user_id=user.id
+                    )
+                    # link = f'API-urls'
+                    # requests.get(link)
+                    return Response({
+                        'status': True,
+                        'detail': 'OTP sent successfully.',
+                        'key': key
+                    })
+            else:
+                return Response({
+                    'status': False,
+                    'detail': 'Sending OTP error.'
+                })
+
+        else:
+            return Response({
+                'status': False,
+                'detail': 'Phone number is not given in post request.'
+            })
+
+
+def send_otp(phone):
+    if phone:
+        key = random.randint(999, 9999)
+        print(key)
+        return key
+    else:
+        return False
+
+# class ValidateOTP(APIView):
+#     """
+#     Logs in an existing user.
+#     """
+#     permission_classes = [AllowAny]
+#     serializer_class = LoginSerializer
+#
+#     def post(self, request):
+#         """
+#         Checks is user exists.
+#         Email and password are required.
+#         Returns a JSON web token.
+#         """
+#         serializer = self.serializer_class(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class ValidateOTP(APIView):
+    # permission_classes = (permissions.AllowAny,)
+    permission_classes = [AllowAny]
+    serializer_class = OTPSerializer
+
+    def post(self, request, *args, **kwargs):
+        phone = request.data.get('phone', False)
+        otp_sent = request.data.get('otp', False)
+        count = 0
+
+        if phone and otp_sent:
+            old = PhoneOTP.objects.filter(phone__iexact=phone)
+            print(old)
+            if old.exists():
+                old = old.last()
+                otp = old.otp
+                print(otp)
+                if str(otp_sent) == str(otp):
+                    old.validated = True
+                    user_id = old.user_id
+                    user = User.objects.get(id=user_id)
+                    token = user.token
+                    res={
+                        "token":token
+                    }
+                    old.key_token=token
+                    old.save()
+                    # user = serializer.is_valid(raise_exception=True)
+                    # serializer = self.serializer_class(data=request.data)
+                    # serializer.is_valid(raise_exception=True)
+
+                    return Response(res, status=status.HTTP_200_OK)
+                # elif str(otp_sent) != str(otp):
+                #     if count > 5:
+                #         return Response({
+                #             'status': False,
+                #             'detail': 'Sending otp error. Limit Exceeded. Please contact customer support.'
+                #         })
+                #     count = count + 1
+
+                elif str(otp_sent) == None:
+                    return Response({
+                        'status': False,
+                        'detail': 'OTP incorrect.'
+                    })
+                return Response({
+                    'status': False,
+                    'detail': 'Something gone wrong'
+                })
+            else:
+                return Response({
+                    'status': False,
+                    'detail': 'First proceed via sending otp request.'
+                })
+        else:
+            return Response({
+                'status': False,
+                'detail': 'Please provide both phone and otp for validations'
+            })
