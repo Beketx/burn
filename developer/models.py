@@ -19,8 +19,21 @@ class Developer(models.Model):
     dev_service = models.OneToOneField(to="DeveloperService", on_delete=models.CASCADE, null=True)
     stacks_id = models.ManyToManyField(Stacks)
     skills_id = models.ManyToManyField(Skills)
+    
     def __str__(self):
-        return self.education
+        return self.user.email
+
+class Rating(models.Model):
+    communication = models.FloatField(null=True)
+    quality = models.FloatField(null=True)
+    truth_review = models.FloatField(null=True)
+    developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True)
+    user_id = models.IntegerField(null=True)
+
+class Review(models.Model):
+    text = models.TextField(null=True)
+    developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True)
+    user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
 
 class ImageTab(models.Model):
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE)

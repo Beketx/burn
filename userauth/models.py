@@ -78,6 +78,7 @@ class User(PermissionsMixin, AbstractBaseUser):
         blank=False,
         null=True
     )
+    birth_date = models.DateField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True, null=True)
     password = models.CharField(max_length=140, default='ADminadmin123', null=True)

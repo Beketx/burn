@@ -227,19 +227,19 @@ class ValidatePhoneSendOTP(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        # email = request.data.get('email' , False)
-        phone_number = request.data.get('phone')
-        if phone_number:
-            phone = str(phone_number)
+        email = request.data.get('email')
+        # phone_number = request.data.get('phone',)
+        if email:
+            email = str(email)
             # user = User.objects.filter(phone__iexact=phone)
             # if user.exists():
-            key = send_otp(phone)
+            key = send_otp(email)
             try:
-                user = User.objects.get(phone=phone)
+                user = User.objects.get(email=email)
                 if key:
                     PhoneOTP.objects.create(
                         # name = name,
-                        phone=phone,
+                        email=email,
                         otp=key,
                         user_id=user.id
                     )
@@ -251,11 +251,11 @@ class ValidatePhoneSendOTP(APIView):
                         'key': key
                     })
             except:
-                user = User.objects.create(phone=phone)
+                user = User.objects.create(email=email)
                 if key:
                     PhoneOTP.objects.create(
                         # name = name,
-                        phone=phone,
+                        email=email,
                         otp=key,
                         user_id=user.id
                     )
@@ -279,8 +279,8 @@ class ValidatePhoneSendOTP(APIView):
             })
 
 
-def send_otp(phone):
-    if phone:
+def send_otp(email):
+    if email:
         key = random.randint(999, 9999)
         print(key)
         return key
@@ -311,12 +311,12 @@ class ValidateOTP(APIView):
     serializer_class = OTPSerializer
 
     def post(self, request, *args, **kwargs):
-        phone = request.data.get('phone', False)
+        email = request.data.get('email', False)
         otp_sent = request.data.get('otp', False)
         count = 0
 
-        if phone and otp_sent:
-            old = PhoneOTP.objects.filter(phone__iexact=phone)
+        if email and otp_sent:
+            old = PhoneOTP.objects.filter(email__iexact=email)
             print(old)
             if old.exists():
                 old = old.last()
