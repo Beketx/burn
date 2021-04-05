@@ -1,7 +1,10 @@
-from django.urls import re_path, include,path
+from django.urls import re_path, include, path
 
-from .views import RegistrationClientAPIView, RegistrationDeveloperAPIView
+from rest_framework.routers import DefaultRouter
+from .views import RegistrationClientAPIView, RegistrationDeveloperAPIView, CitiesView
 from .views import LoginAPIView, Test, ValidateOTP, ValidatePhoneSendOTP
+
+
 
 urlpatterns = [
     re_path(r'^registration/client/?$', RegistrationClientAPIView.as_view(), name='user_registration'),
@@ -10,4 +13,5 @@ urlpatterns = [
     path('test/', Test.as_view()),
     path('send-otp/', ValidatePhoneSendOTP.as_view()),
     path('validate-otp/', ValidateOTP.as_view())
+
 ]

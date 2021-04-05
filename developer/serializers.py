@@ -1,6 +1,9 @@
 from rest_framework import serializers
+
+from userauth.serializers import UserSerializer
 from .models import Skills, Stacks, Developer, DeveloperService, Rating, Review, ImageTab
-from userauth.models import User
+from userauth.models import User, City
+from devutils.serializers import StacksSerializer, StackTitleSerializer, SkillTitleSerializer, SkillsSerializer
 
 class ReviewSerializer(serializers.Serializer):
     user = serializers.CharField()
@@ -17,25 +20,13 @@ class DeveloperServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeveloperService
-        fields = ['__all__']
-    
+        fields = ['service_title', 'service_description', 'price', 'price_fix']
 
-class StackSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=50, read_only=True)
-
-class SkillSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=50, write_only=True)
-
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ["name", "surname"]
 
 class DevelopersSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=True, read_only=True)
-    stacks = StackSerializer(many=True, read_only=True)
-    skills = SkillSerializer(many=True, write_only=True)
+    stacks = StackTitleSerializer(many=True, read_only=True)
+    skills = SkillTitleSerializer(many=True, write_only=True)
     rating = serializers.FloatField(read_only=True)
     rating_count = serializers.IntegerField(write_only=True)
     price = serializers.IntegerField()
@@ -46,16 +37,13 @@ class DevelopersSerializer(serializers.ModelSerializer):
 
 class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
-    birth_date = serializers.DateField(format="%d.%m.%Y")
-    city = serializers.CharField(read_only=False,write_only=False)
-    rating = RatingSerializer()
+    # birth_date = serializers.DateField(format="%d.%m.%Y")
+    # city = serializers.CharField(read_only=False,write_only=False)
+    rating = RatingSerializer(many=False, read_only=True)
     rating_count = serializers.IntegerField(write_only=True)
     review_count = serializers.IntegerField(write_only=True)
-    dev_service = DeveloperServiceSerializer
+    dev_service = DeveloperServiceSerializer(many=False)
 
     class Meta:
         model = Developer
-        fields = ["user", "birth_date", "city", "dev_service", "rating", "about", "rating_count", "review_count"]
-
-
-    
+        fields = ["user", "dev_service", "rating", "about", "rating_count", "review_count"]

@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
-from .models import User, PhoneOTP
+from .models import User, PhoneOTP, City
+
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """
@@ -74,6 +75,7 @@ class LoginSerializer(serializers.Serializer):
             'token': user.token,
         }
 
+
 class OTPSerializer(serializers.Serializer):
     """
     Authenticates an existing user.
@@ -123,8 +125,27 @@ class OTPSerializer(serializers.Serializer):
         except:
             raise Exception('Phone credentials is false')
 
-class PhoneOTPSerializer(serializers.ModelSerializer):
 
-	class Meta:
-		model = PhoneOTP
-		fields = ['phone', 'otp']
+class PhoneOTPSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhoneOTP
+        fields = ['phone', 'otp']
+
+
+class CityTitleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = City
+        fields = ['title']
+
+class UserSerializer(serializers.ModelSerializer):
+    city = CityTitleSerializer(read_only=True, many=False)
+
+    class Meta:
+        model = User
+        fields = ["name", "surname", "birth_date", "city"]
+
+class CitiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = ['id', 'title']

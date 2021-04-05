@@ -58,7 +58,8 @@ LOCAL_APPS = [
     # 'programmer',
     # 'accounting',
     'userauth',
-    'developer'
+    'developer',
+    'devutils'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + INSTALLED_APPS + LOCAL_APPS
@@ -94,7 +95,7 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
         ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'userauth.authentication.JWTAuthentication',

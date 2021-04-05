@@ -7,12 +7,14 @@ import datetime as dt
 from datetime import datetime
 from django.core.files.storage import FileSystemStorage
 
-from rest_framework import status
+from rest_framework import status, viewsets
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from developer.models import *
+from .serializers import CitiesSerializer
 from .models import *
 from .serializers import LoginSerializer, OTPSerializer, PhoneOTPSerializer
 from .serializers import RegistrationSerializer
@@ -364,3 +366,8 @@ class ValidateOTP(APIView):
                 'status': False,
                 'detail': 'Please provide both phone and otp for validations'
             })
+
+class CitiesView(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+    serializer_class = CitiesSerializer
+    queryset = City.objects.all()
+    permission_class = [AllowAny, ]

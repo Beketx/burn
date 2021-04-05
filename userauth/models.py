@@ -65,13 +65,13 @@ class User(PermissionsMixin, AbstractBaseUser):
     Defines our custom user class.
     Username, email and password are required.
     """
-
+    username = models.CharField(max_length=3, null=True, blank=True, default="one")
     name = models.CharField(max_length=254, null=True, blank=True)
     surname = models.CharField(max_length=254, null=True, blank=True)
 
     phone_regex = RegexValidator(regex=r'^\+?1?\d{11,13}$',
                                  message="Phone number must be entered in the form of +919999999999.")
-    phone = models.CharField(validators=[phone_regex], max_length=17, unique=True, null=True)
+    phone = models.CharField(validators=[phone_regex], max_length=17, unique=True, null=True, blank=True)
     email = models.EmailField(
         validators=[validators.validate_email],
         unique=True,
@@ -120,6 +120,8 @@ class User(PermissionsMixin, AbstractBaseUser):
             return self.phone
         elif self.name:
             return self.name
+        elif self.username:
+            return self.username
 
     @property
     def token(self):
