@@ -19,7 +19,63 @@ from .models import *
 from .serializers import LoginSerializer, OTPSerializer, PhoneOTPSerializer
 from .serializers import RegistrationSerializer
 
-class RegistrationClientAPIView(APIView):
+class RegistrationStepOne(APIView):
+    """
+    Registers a new user.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = RegistrationSerializer
+
+    def post(self, request):
+        """
+        Creates a new User object.
+        Username, email, and password are required.
+        Returns a JSON web token.
+        """
+
+        try:
+            data = request.data
+            keys = request.META['HTTP_AUTHORIZATION']
+            keys = keys.split()
+            print(keys[1])
+            objOpt = PhoneOTP.objects.get(key_token=keys[1])
+            if objOpt.email:
+                user = User.objects.get(email=objOpt.email)
+            #     user.phone = data['phone']
+            # elif objOpt.phone:
+            #     user = User.objects.get(phone=objOpt.phone)
+            #     user.email = data['email']
+            user.name = data['name']
+            user.surname = data['surname']
+            if User.objects.filter(iin=data['iin']).exists():
+                res = {
+                    'status': False,
+                    'detail': "This IIN is already registered"
+                }
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+            user.iin = data['iin']
+            user.role = data['role']
+            user.save()
+            res = {
+                "status": True,
+                "detail": "Registration passed successfully"
+            }
+            return Response(
+                res,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            res = {
+                "status": False,
+                "detail": str(e)
+            }
+            return Response(
+                res,
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+class RegistrationStepTwo(APIView):
     """
     Registers a new user.
     """
@@ -46,15 +102,6 @@ class RegistrationClientAPIView(APIView):
             elif objOpt.phone:
                 user = User.objects.get(phone=objOpt.phone)
                 user.email = data['email']
-            user.name = data['name']
-            user.surname = data['surname']
-            user.iin = data['iin']
-            if User.objects.filter(iin=data['iin']).exists():
-                res = {
-                    'status': False,
-                    'detail': "This IIN is already registered"
-                }
-                return Response(res, status=status.HTTP_403_FORBIDDEN)
             if User.objects.filter(phone=data['phone']).exists():
                 res = {
                     'status': False,
@@ -64,10 +111,10 @@ class RegistrationClientAPIView(APIView):
             user.phone = data['phone']
             user.gender = data['gender']
             user.is_joined = True
-            user.work_place = data['work_place']
             user.birth_date = data['birth_date']
             city = City.objects.get(id=data['city'])
             user.city = city
+            user.role = data['role']
             user.save()
             # phone = {'phone': objOpt.phone}
             # email = {'email': objOpt.email}
@@ -92,8 +139,58 @@ class RegistrationClientAPIView(APIView):
                 res,
                 status=status.HTTP_403_FORBIDDEN
             )
+#
+# class RegistrationDeveloperAPIView(APIView):
+#     """
+#     Registers a new user.
+#     """
+#
+#     permission_classes = [AllowAny]
+#     serializer_class = RegistrationSerializer
+#
+#     def post(self, request):
+#         """
+#         Creates a new User object.
+#         Username, email, and password are required.
+#         Returns a JSON web token.
+#         """
+#
+#         try:
+#             data = request.data
+#             keys = request.META['HTTP_AUTHORIZATION']
+#             keys = keys.split()
+#             print(keys[1])
+#             objOpt = PhoneOTP.objects.get(key_token=keys[1])
+#             if objOpt.email:
+#                 user = User.objects.get(email=objOpt.email)
+#                 user.phone = data['phone']
+#             elif objOpt.phone:
+#                 user = User.objects.get(phone=objOpt.phone)
+#                 user.email = data['email']
+#             user.name = data['name']
+#             user.surname = data['surname']
+#             user.iin = data['iin']
+#             if User.objects.filter(iin=data['iin']).exists():
+#                 res = {
+#                     'status': False,
+#                     'detail': "This IIN is already registered"
+#                 }
+#                 return Response(res, status=status.HTTP_403_FORBIDDEN)
+#             if User.objects.filter(phone=data['phone']).exists():
+#                 res = {
+#                     'status': False,
+#                     'detail': "This Phone is already registered"
+#                 }
+#                 return Response(res, status=status.HTTP_403_FORBIDDEN)
+#             user.phone = data['phone']
+#             user.gender = data['gender']
+#             user.birth_date = data['birth_date']
+#             user.is_joined = True
+#             city = City.objects.get(id=data['city'])
+#             user.city = city
+#             user.save()
 
-class RegistrationDeveloperAPIView(APIView):
+class RegistrationStepThree(APIView):
     """
     Registers a new user.
     """
@@ -116,48 +213,119 @@ class RegistrationDeveloperAPIView(APIView):
             objOpt = PhoneOTP.objects.get(key_token=keys[1])
             if objOpt.email:
                 user = User.objects.get(email=objOpt.email)
-                user.phone = data['phone']
-            elif objOpt.phone:
-                user = User.objects.get(phone=objOpt.phone)
-                user.email = data['email']
-            user.name = data['name']
-            user.surname = data['surname']
-            user.iin = data['iin']
-            if User.objects.filter(iin=data['iin']).exists():
-                res = {
-                    'status': False,
-                    'detail': "This IIN is already registered"
-                }
-                return Response(res, status=status.HTTP_403_FORBIDDEN)
-            if User.objects.filter(phone=data['phone']).exists():
-                res = {
-                    'status': False,
-                    'detail': "This Phone is already registered"
-                }
-                return Response(res, status=status.HTTP_403_FORBIDDEN)
-            user.phone = data['phone']
-            user.gender = data['gender']
+            #     user.phone = data['phone']
+            # elif objOpt.phone:
+            #     user = User.objects.get(phone=objOpt.phone)
+            #     user.email = data['email']
             user.work_place = data['work_place']
-            user.birth_date = data['birth_date']
-            user.is_joined = True
-            city = City.objects.get(id=data['city'])
-            user.city = city
+            user.role = data['role']
+            user.save()
+            developer = Developer.objects.create(user=user, education=data['education'], about=data['about'],
+                                     work_experience=data['work_experience'])
+            list_skills = data['skills']
+            for skill_id in list_skills:
+                developer.skills_id.add(skill_id)
+            list_stacks = data['stacks']
+            for stack_id in list_stacks:
+                developer.stacks_id.add(stack_id)
+            res = {
+                "status": True,
+                "detail": "Registration passed successfully"
+            }
+            return Response(
+                res,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            res = {
+                "status": False,
+                "detail": str(e)
+            }
+            return Response(
+                res,
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+class RegistrationStepFour(APIView):
+    """
+    Registers a new user.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = RegistrationSerializer
+
+    def post(self, request):
+        """
+        Creates a new User object.
+        Username, email, and password are required.
+        Returns a JSON web token.
+        """
+
+        try:
+            data = request.data
+            keys = request.META['HTTP_AUTHORIZATION']
+            keys = keys.split()
+            print(keys[1])
+            objOpt = PhoneOTP.objects.get(key_token=keys[1])
+            if objOpt.email:
+                user = User.objects.get(email=objOpt.email)
+            #     user.phone = data['phone']
+            # elif objOpt.phone:
+            #     user = User.objects.get(phone=objOpt.phone)
+            #     user.email = data['email']
+            user.role = data['role']
             user.save()
             dev_service = DeveloperService.objects.create(service_title=data['service_title'], service_description=data['service_description'],
                                                             price=data['price'], price_fix=data['price_fix'])
-            developer = Developer.objects.create(user=user, education=data['education'], about=data['about'],
-                                     work_experience=data['work_experience'], dev_service=dev_service)
-            list_skills = data['skills']
-            split_skills = list_skills.split(",")
-            res = ("".join(map(str, split_skills)))
-            for skill_id in res:
-                developer.skills_id.add(skill_id)
-            list_stacks = data['stacks']
-            split_stacks = list_stacks.split(",")
-            res = ("".join(map(str, split_stacks)))
-            for stack_id in res:
-                developer.stacks_id.add(stack_id)
+            Developer.objects.filter(user=user).update( dev_service=dev_service)
+            res = {
+                "status": True,
+                "detail": "Registration passed successfully"
+            }
+            return Response(
+                res,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            res = {
+                "status": False,
+                "detail": str(e)
+            }
+            return Response(
+                res,
+                status=status.HTTP_403_FORBIDDEN
+            )
 
+class RegistrationStepFive(APIView):
+    """
+    Registers a new user.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = RegistrationSerializer
+
+    def post(self, request):
+        """
+        Creates a new User object.
+        Username, email, and password are required.
+        Returns a JSON web token.
+        """
+
+        try:
+            data = request.data
+            keys = request.META['HTTP_AUTHORIZATION']
+            keys = keys.split()
+            print(keys[1])
+            objOpt = PhoneOTP.objects.get(key_token=keys[1])
+            if objOpt.email:
+                user = User.objects.get(email=objOpt.email)
+            #     user.phone = data['phone']
+            # elif objOpt.phone:
+            #     user = User.objects.get(phone=objOpt.phone)
+            #     user.email = data['email']
+            user.role = data['role']
+            user.save()
+            developer = Developer.objects.get(user=user)
             """
             Image Front
             """
@@ -220,13 +388,6 @@ class RegistrationDeveloperAPIView(APIView):
             images.image_type = image_type
             images.image_url = url_name
             images.save()
-
-            # phone = {'phone': objOpt.phone}
-            # email = {'email': objOpt.email}
-            # keys = {**data, **phone, **email}
-            # serializer = self.serializer_class(data=keys)
-            # serializer.is_valid(raise_exception=True)
-            # serializer.save()
             res = {
                 "status": True,
                 "detail": "Registration passed successfully"

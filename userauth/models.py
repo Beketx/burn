@@ -85,14 +85,14 @@ class User(PermissionsMixin, AbstractBaseUser):
     iin = models.CharField(unique=True, max_length=9, null=True)
     city = models.ForeignKey(to="City", on_delete=models.CASCADE, null=True)
     GENDER = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('U', 'Undefined'),
+        (1, 'Male'),
+        (2, 'Female'),
+        (3, 'Undefined'),
     )
     gender = models.CharField(max_length=1, choices=GENDER, null=True)
     ROLE = (
-        ('C', 'Client'),
-        ('D', 'Developer')
+        (1, 'Client'),
+        (2, 'Developer')
     )
     role = models.CharField(max_length=1, choices=ROLE, null=True)
 
