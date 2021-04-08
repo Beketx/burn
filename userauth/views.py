@@ -188,7 +188,10 @@ class RegistrationDeveloperAPIView(APIView):
         # serializer = self.serializer_class(data=keys)
         # serializer.is_valid(raise_exception=True)
         # serializer.save()
-
+        res = {
+            "status": True,
+            "detail": "Registration passed successfully"
+        }
         return Response(
             status=status.HTTP_201_CREATED,
         )
