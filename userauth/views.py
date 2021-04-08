@@ -49,6 +49,19 @@ class RegistrationClientAPIView(APIView):
             user.name = data['name']
             user.surname = data['surname']
             user.iin = data['iin']
+            if User.objects.filter(iin=data['iin']).exists():
+                res = {
+                    'status': False,
+                    'detail': "This IIN is already registered"
+                }
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+            if User.objects.filter(phone=data['phone']).exists():
+                res = {
+                    'status': False,
+                    'detail': "This Phone is already registered"
+                }
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+            user.phone = data['phone']
             user.gender = data['gender']
             user.is_joined = True
             user.work_place = data['work_place']
@@ -110,6 +123,19 @@ class RegistrationDeveloperAPIView(APIView):
             user.name = data['name']
             user.surname = data['surname']
             user.iin = data['iin']
+            if User.objects.filter(iin=data['iin']).exists():
+                res = {
+                    'status': False,
+                    'detail': "This IIN is already registered"
+                }
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+            if User.objects.filter(phone=data['phone']).exists():
+                res = {
+                    'status': False,
+                    'detail': "This Phone is already registered"
+                }
+                return Response(res, status=status.HTTP_403_FORBIDDEN)
+            user.phone = data['phone']
             user.gender = data['gender']
             user.work_place = data['work_place']
             user.birth_date = data['birth_date']
