@@ -50,6 +50,7 @@ class RegistrationClientAPIView(APIView):
         user.surname = data['surname']
         user.iin = data['iin']
         user.gender = data['gender']
+        user.is_joined = True
         user.work_place = data['work_place']
         user.birth_date = data['birth_date']
         city = City.objects.get(id=data['city'])
@@ -99,6 +100,7 @@ class RegistrationDeveloperAPIView(APIView):
         user.gender = data['gender']
         user.work_place = data['work_place']
         user.birth_date = data['birth_date']
+        user.is_joined = True
         city = City.objects.get(id=data['city'])
         user.city = city
         user.save()
@@ -253,7 +255,7 @@ class ValidatePhoneSendOTP(APIView):
                         'key': key
                     })
             except:
-                user = User.objects.create(email=email)
+                user = User.objects.create(email=email,is_joined=False)
                 if key:
                     PhoneOTP.objects.create(
                         # name = name,
@@ -325,16 +327,31 @@ class ValidateOTP(APIView):
                 otp = old.otp
                 print(otp)
                 if str(otp_sent) == str(otp):
-                    old.validated = True
-                    user_id = old.user_id
-                    user = User.objects.get(id=user_id)
-                    token = user.token
-                    res={
-                        "status": True,
-                        "token": token
-                    }
-                    old.key_token=token
-                    old.save()
+                    if old.key_token == None:
+                        old.validated = True
+                        user_id = old.user_id
+                        user = User.objects.get(id=user_id)
+                        token = user.token
+                        if user.is_joined == True:
+                            res = {
+                                "status": True,
+                                "registered": True,
+                                "token": token
+                            }
+                        else:
+                            res = {
+                                "status": True,
+                                "registered": False,
+                                "token": token
+                            }
+                        old.key_token = token
+                        old.save()
+                    else:
+                        res = {
+                            "status": False,
+                            "registered": None,
+                            "details": "User already exists"
+                        }
                     # user = serializer.is_valid(raise_exception=True)
                     # serializer = self.serializer_class(data=request.data)
                     # serializer.is_valid(raise_exception=True)

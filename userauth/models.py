@@ -100,6 +100,8 @@ class User(PermissionsMixin, AbstractBaseUser):
 
     is_active = models.BooleanField(default=True)
 
+    is_joined = models.BooleanField(default=True)
+
     # The `USERNAME_FIELD` property tells us which field we will use to log in.
     USERNAME_FIELD = 'email'
 
