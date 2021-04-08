@@ -59,7 +59,8 @@ LOCAL_APPS = [
     # 'accounting',
     'userauth',
     'developer',
-    'devutils'
+    'devutils',
+    'utils'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + INSTALLED_APPS + LOCAL_APPS

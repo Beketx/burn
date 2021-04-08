@@ -5,16 +5,120 @@ from .models import Skills, Stacks, Developer, DeveloperService, Rating, Review,
 from userauth.models import User, City
 from devutils.serializers import StacksSerializer, StackTitleSerializer, SkillTitleSerializer, SkillsSerializer
 
-class ReviewSerializer(serializers.Serializer):
-    user = serializers.CharField()
-    review = serializers.CharField(max_length=500)
-    rating = serializers.FloatField()
+class ReviewSerializer(serializers.ModelSerializer):
+    review_count = serializers.SerializerMethodField('get_review_count')
+    user = serializers.SerializerMethodField('get_name')
+    review = serializers.SerializerMethodField('get_review')
+    rating = serializers.SerializerMethodField('get_rating')
 
-class RatingSerializer(serializers.Serializer):
-    average_rating = serializers.FloatField()
-    communication = serializers.FloatField()
-    quality = serializers.FloatField()
-    truth_review = serializers.FloatField()
+    class Meta:
+        model = Review
+        fields = ['review_count', 'user', 'review', 'rating']
+    def get_name(self, obj):
+        dev = Developer.objects.get(obj)
+        return dev.user.name
+    def get_review_count(self, obj):
+        review = Review.objects.filter(developer=obj).count()
+        return review
+    def get_review(self, obj):
+        review = Review.objects.filter(developer=obj)
+        return review.text
+    def get_rating(self, obj):
+        rating = Rating.objects.filter(developer=obj)
+        return (rating.communication+rating.quality+rating.truth_review)/3
+
+class RatingSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField("get_rating_avg")
+    count_rating = serializers.SerializerMethodField('get_count_avg')
+    communication = serializers.SerializerMethodField('get_communication')
+    quality = serializers.SerializerMethodField('get_quality')
+    truth_review = serializers.SerializerMethodField('get_truth')
+
+    class Meta:
+        model = Rating
+        fields = ["average_rating", 'count_rating', 'communication', 'quality', 'truth_review']
+
+    def get_count_avg(self, obj):
+        try:
+            rating = Rating.objects.filter(developer=obj)
+            sum_rate = 0
+            count_rate = 0
+            for rate in rating:
+                all_rate = (rate.communication + rate.quality + rate.truth_review) / 3
+                sum_rate += all_rate
+                count_rate += 1
+            if count_rate == 0:
+                count_rate = 0
+            return count_rate
+        except:
+            return 0
+
+    def get_rating_avg(self, obj):
+        try:
+            rating = Rating.objects.filter(developer=obj)
+            sum_rate = 0
+            count_rate = 0
+            for rate in rating:
+                all_rate = (rate.communication + rate.quality + rate.truth_review) / 3
+                sum_rate += all_rate
+                count_rate += 1
+            if count_rate > 0:
+                avg_rating = sum_rate / count_rate
+            else:
+                avg_rating = 0
+            return avg_rating
+        except:
+            return 0
+
+    def get_communication(self, obj):
+        try:
+            rating = Rating.objects.filter(developer=obj)
+            sum_rate = 0
+            count_rate = 0
+            for rate in rating:
+                sum_rate += rate.communication
+                count_rate += 1
+            if count_rate > 0:
+                avg_communication = sum_rate/count_rate
+            else:
+                avg_communication = 0
+            return avg_communication
+        except:
+            return 0
+
+    def get_quality(self, obj):
+        try:
+            rating = Rating.objects.filter(developer=obj)
+            sum_rate = 0
+            count_rate = 0
+            for rate in rating:
+                sum_rate += rate.quality
+                count_rate += 1
+            if count_rate > 0:
+                avg_quality = sum_rate/count_rate
+            else:
+                avg_quality = 0
+            return avg_quality
+        except:
+            return 0
+
+    def get_truth(self, obj):
+        try:
+            rating = Rating.objects.filter(developer=obj)
+            sum_rate = 0
+            count_rate = 0
+            for rate in rating:
+                sum_rate += rate.truth_review
+                count_rate += 1
+            if count_rate > 0:
+                avg_truth_review = sum_rate/count_rate
+            else:
+                avg_truth_review = 0
+            return avg_truth_review
+        except:
+            return 0
+
+
 
 class DeveloperServiceSerializer(serializers.ModelSerializer):
 
@@ -24,26 +128,58 @@ class DeveloperServiceSerializer(serializers.ModelSerializer):
 
 
 class DevelopersSerializer(serializers.ModelSerializer):
-    user = UserSerializer(many=True, read_only=True)
+    user = UserSerializer(many=False, read_only=True)
     stacks = StackTitleSerializer(many=True, read_only=True)
     skills = SkillTitleSerializer(many=True, write_only=True)
-    rating = serializers.FloatField(read_only=True)
-    rating_count = serializers.IntegerField(write_only=True)
-    price = serializers.IntegerField()
+    rating = serializers.SerializerMethodField("get_rating_avg")
+    rating_count = serializers.SerializerMethodField("get_rating_count")
+    price = serializers.SerializerMethodField('get_price')
 
     class Meta:
         model = Developer
-        fields = ["user", "stacks", "skills", "rating", "rating_count", "price"]
+        fields = ['id' ,"user", "stacks", "skills", "rating", "rating_count", "price"]
+
+    def get_rating_count(self, obj):
+        rating = Rating.objects.filter(developer=obj)
+        sum_rate = 0
+        count_rate = 0
+        for rate in rating:
+            all_rate = (rate.communication + rate.quality + rate.truth_review) / 3
+            sum_rate += all_rate
+            count_rate += 1
+        if count_rate == 0:
+            count_rate = 0
+        return count_rate
+
+    def get_rating_avg(self, obj):
+        rating = Rating.objects.filter(developer=obj)
+        sum_rate = 0
+        count_rate = 0
+        for rate in rating:
+            all_rate = (rate.communication + rate.quality + rate.truth_review)/3
+            sum_rate += all_rate
+            count_rate += 1
+        if count_rate > 0:
+            avg_rating = sum_rate / count_rate
+        else:
+            avg_rating = None
+        return avg_rating
+
+    def get_price(self, obj):
+        service = DeveloperService.objects.get(developer=obj)
+        return service.price
+
+
+
 
 class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     # birth_date = serializers.DateField(format="%d.%m.%Y")
     # city = serializers.CharField(read_only=False,write_only=False)
     rating = RatingSerializer(many=False, read_only=True)
-    rating_count = serializers.IntegerField(write_only=True)
-    review_count = serializers.IntegerField(write_only=True)
+    review_count = ReviewSerializer(many=True, read_only=True)
     dev_service = DeveloperServiceSerializer(many=False)
 
     class Meta:
         model = Developer
-        fields = ["user", "dev_service", "rating", "about", "rating_count", "review_count"]
+        fields = ['id', "user", "dev_service", "rating",  "review_count", "about", ]

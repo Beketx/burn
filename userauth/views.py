@@ -330,7 +330,8 @@ class ValidateOTP(APIView):
                     user = User.objects.get(id=user_id)
                     token = user.token
                     res={
-                        "token":token
+                        "status": True,
+                        "token": token
                     }
                     old.key_token=token
                     old.save()
