@@ -34,38 +34,51 @@ class RegistrationClientAPIView(APIView):
         Returns a JSON web token.
         """
 
-
-        data = request.data
-        keys = request.META['HTTP_AUTHORIZATION']
-        keys = keys.split()
-        print(keys[1])
-        objOpt = PhoneOTP.objects.get(key_token=keys[1])
-        if objOpt.email:
-            user = User.objects.get(email=objOpt.email)
-            user.phone = data['phone']
-        elif objOpt.phone:
-            user = User.objects.get(phone=objOpt.phone)
-            user.email = data['email']
-        user.name = data['name']
-        user.surname = data['surname']
-        user.iin = data['iin']
-        user.gender = data['gender']
-        user.is_joined = True
-        user.work_place = data['work_place']
-        user.birth_date = data['birth_date']
-        city = City.objects.get(id=data['city'])
-        user.city = city
-        user.save()
-        # phone = {'phone': objOpt.phone}
-        # email = {'email': objOpt.email}
-        # keys = {**data, **phone, **email}
-        # serializer = self.serializer_class(data=keys)
-        # serializer.is_valid(raise_exception=True)
-        # serializer.save()
-
-        return Response(
-            status=status.HTTP_201_CREATED,
-        )
+        try:
+            data = request.data
+            keys = request.META['HTTP_AUTHORIZATION']
+            keys = keys.split()
+            print(keys[1])
+            objOpt = PhoneOTP.objects.get(key_token=keys[1])
+            if objOpt.email:
+                user = User.objects.get(email=objOpt.email)
+                user.phone = data['phone']
+            elif objOpt.phone:
+                user = User.objects.get(phone=objOpt.phone)
+                user.email = data['email']
+            user.name = data['name']
+            user.surname = data['surname']
+            user.iin = data['iin']
+            user.gender = data['gender']
+            user.is_joined = True
+            user.work_place = data['work_place']
+            user.birth_date = data['birth_date']
+            city = City.objects.get(id=data['city'])
+            user.city = city
+            user.save()
+            # phone = {'phone': objOpt.phone}
+            # email = {'email': objOpt.email}
+            # keys = {**data, **phone, **email}
+            # serializer = self.serializer_class(data=keys)
+            # serializer.is_valid(raise_exception=True)
+            # serializer.save()
+            res = {
+                "status": True,
+                "detail": "Registration passed successfully"
+            }
+            return Response(
+                res,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            res = {
+                "status": False,
+                "detail": str(e)
+            }
+            return Response(
+                res,
+                status=status.HTTP_403_FORBIDDEN
+            )
 
 class RegistrationDeveloperAPIView(APIView):
     """
@@ -82,120 +95,129 @@ class RegistrationDeveloperAPIView(APIView):
         Returns a JSON web token.
         """
 
+        try:
+            data = request.data
+            keys = request.META['HTTP_AUTHORIZATION']
+            keys = keys.split()
+            print(keys[1])
+            objOpt = PhoneOTP.objects.get(key_token=keys[1])
+            if objOpt.email:
+                user = User.objects.get(email=objOpt.email)
+                user.phone = data['phone']
+            elif objOpt.phone:
+                user = User.objects.get(phone=objOpt.phone)
+                user.email = data['email']
+            user.name = data['name']
+            user.surname = data['surname']
+            user.iin = data['iin']
+            user.gender = data['gender']
+            user.work_place = data['work_place']
+            user.birth_date = data['birth_date']
+            user.is_joined = True
+            city = City.objects.get(id=data['city'])
+            user.city = city
+            user.save()
+            dev_service = DeveloperService.objects.create(service_title=data['service_title'], service_description=data['service_description'],
+                                                            price=data['price'], price_fix=data['price_fix'])
+            developer = Developer.objects.create(user=user, education=data['education'], about=data['about'],
+                                     work_experience=data['work_experience'], dev_service=dev_service)
+            list_skills = data['skills']
+            split_skills = list_skills.split(",")
+            res = ("".join(map(str, split_skills)))
+            for skill_id in res:
+                developer.skills_id.add(skill_id)
+            list_stacks = data['stacks']
+            split_stacks = list_stacks.split(",")
+            res = ("".join(map(str, split_stacks)))
+            for stack_id in res:
+                developer.stacks_id.add(stack_id)
 
-        data = request.data
-        keys = request.META['HTTP_AUTHORIZATION']
-        keys = keys.split()
-        print(keys[1])
-        objOpt = PhoneOTP.objects.get(key_token=keys[1])
-        if objOpt.email:
-            user = User.objects.get(email=objOpt.email)
-            user.phone = data['phone']
-        elif objOpt.phone:
-            user = User.objects.get(phone=objOpt.phone)
-            user.email = data['email']
-        user.name = data['name']
-        user.surname = data['surname']
-        user.iin = data['iin']
-        user.gender = data['gender']
-        user.work_place = data['work_place']
-        user.birth_date = data['birth_date']
-        user.is_joined = True
-        city = City.objects.get(id=data['city'])
-        user.city = city
-        user.save()
-        dev_service = DeveloperService.objects.create(service_title=data['service_title'], service_description=data['service_description'],
-                                                        price=data['price'], price_fix=data['price_fix'])
-        developer = Developer.objects.create(user=user, education=data['education'], about=data['about'],
-                                 work_experience=data['work_experience'], dev_service=dev_service)
-        list_skills = data['skills']
-        split_skills = list_skills.split(",")
-        res = ("".join(map(str, split_skills)))
-        for skill_id in res:
-            developer.skills_id.add(skill_id)
-        list_stacks = data['stacks']
-        split_stacks = list_stacks.split(",")
-        res = ("".join(map(str, split_stacks)))
-        for stack_id in res:
-            developer.stacks_id.add(stack_id)
+            """
+            Image Front
+            """
+            date = datetime.today().strftime('%Y-%m-%d')
+            folder = 'media/' + str(date) + '/front_photo/'
+            myfile = request.FILES['front_photo']
+            fileName, fileExtension = os.path.splitext(myfile.name)
+            myfile.name = 'front_photo' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+            url_name = 'media/' + str(date) + '/front_photo/' + str(myfile.name)
+            fs = FileSystemStorage(location=folder)
+            file_name = fs.save(myfile.name, myfile)
+            file_url = fs.url(file_name)
+            timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            images = ImageTab()
+            images.developer = developer
+            image_type = ImageType.objects.get(type_id=1)
+            images.image_type = image_type
+            images.image_url = url_name
+            images.save()
 
-        """
-        Image Front
-        """
-        date = datetime.today().strftime('%Y-%m-%d')
-        folder = 'media/' + str(date) + '/front_photo/'
-        myfile = request.FILES['front_photo']
-        fileName, fileExtension = os.path.splitext(myfile.name)
-        myfile.name = 'front_photo' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
-        url_name = 'media/' + str(date) + '/front_photo/' + str(myfile.name)
-        fs = FileSystemStorage(location=folder)
-        file_name = fs.save(myfile.name, myfile)
-        file_url = fs.url(file_name)
-        timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        images = ImageTab()
-        images.developer = developer
-        image_type = ImageType.objects.get(type_id=1)
-        images.image_type = image_type
-        images.image_url = url_name
-        images.save()
+            """
+            Image avatar
+            """
+            date = datetime.today().strftime('%Y-%m-%d')
+            folder = 'media/' + str(date) + '/avatar/'
+            myfile = request.FILES['avatar']
+            fileName, fileExtension = os.path.splitext(myfile.name)
+            myfile.name = 'avatar' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+            url_name = 'media/' + str(date) + '/avatar/' + str(myfile.name)
+            fs = FileSystemStorage(location=folder)
+            file_name = fs.save(myfile.name, myfile)
+            file_url = fs.url(file_name)
+            timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            images = ImageTab()
+            images.developer = developer
+            image_type = ImageType.objects.get(type_id=2)
+            images.image_type = image_type
+            images.image_url = url_name
+            images.save()
 
-        """
-        Image avatar
-        """
-        date = datetime.today().strftime('%Y-%m-%d')
-        folder = 'media/' + str(date) + '/avatar/'
-        myfile = request.FILES['avatar']
-        fileName, fileExtension = os.path.splitext(myfile.name)
-        myfile.name = 'avatar' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
-        url_name = 'media/' + str(date) + '/avatar/' + str(myfile.name)
-        fs = FileSystemStorage(location=folder)
-        file_name = fs.save(myfile.name, myfile)
-        file_url = fs.url(file_name)
-        timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        images = ImageTab()
-        images.developer = developer
-        image_type = ImageType.objects.get(type_id=2)
-        images.image_type = image_type
-        images.image_url = url_name
-        images.save()
+            """
+            Image passport
+            """
+            date = datetime.today().strftime('%Y-%m-%d')
+            folder = 'media/' + str(date) + '/passport/'
+            myfile = request.FILES['passport']
+            fileName, fileExtension = os.path.splitext(myfile.name)
+            myfile.name = 'passport' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+            url_name = 'media/' + str(date) + '/passport/' + str(myfile.name)
+            fs = FileSystemStorage(location=folder)
+            file_name = fs.save(myfile.name, myfile)
+            file_url = fs.url(file_name)
+            timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            images = ImageTab()
+            images.developer = developer
+            image_type = ImageType.objects.get(type_id=3)
+            images.image_type = image_type
+            images.image_url = url_name
+            images.save()
 
-        """
-        Image passport
-        """
-        date = datetime.today().strftime('%Y-%m-%d')
-        folder = 'media/' + str(date) + '/passport/'
-        myfile = request.FILES['passport']
-        fileName, fileExtension = os.path.splitext(myfile.name)
-        myfile.name = 'passport' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
-        url_name = 'media/' + str(date) + '/passport/' + str(myfile.name)
-        fs = FileSystemStorage(location=folder)
-        file_name = fs.save(myfile.name, myfile)
-        file_url = fs.url(file_name)
-        timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        images = ImageTab()
-        images.developer = developer
-        image_type = ImageType.objects.get(type_id=3)
-        images.image_type = image_type
-        images.image_url = url_name
-        images.save()
-
-        # phone = {'phone': objOpt.phone}
-        # email = {'email': objOpt.email}
-        # keys = {**data, **phone, **email}
-        # serializer = self.serializer_class(data=keys)
-        # serializer.is_valid(raise_exception=True)
-        # serializer.save()
-        res = {
-            "status": True,
-            "detail": "Registration passed successfully"
-        }
-        return Response(
-            status=status.HTTP_201_CREATED,
-        )
-
+            # phone = {'phone': objOpt.phone}
+            # email = {'email': objOpt.email}
+            # keys = {**data, **phone, **email}
+            # serializer = self.serializer_class(data=keys)
+            # serializer.is_valid(raise_exception=True)
+            # serializer.save()
+            res = {
+                "status": True,
+                "detail": "Registration passed successfully"
+            }
+            return Response(
+                res,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            res = {
+                "status": False,
+                "detail": e
+            }
+            return Response(
+                res,
+                status=status.HTTP_403_FORBIDDEN
+            )
 
 class LoginAPIView(APIView):
     """
