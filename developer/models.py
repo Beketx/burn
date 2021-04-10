@@ -13,7 +13,7 @@ class Skills(models.Model):
         return self.title
 
 class Developer(models.Model):
-    user = models.ForeignKey('userauth.User', on_delete=models.CASCADE)
+    user = models.OneToOneField('userauth.User', on_delete=models.CASCADE)
     education = models.CharField(max_length=140, null=True)
     about = models.CharField(max_length=255, null=True)
     work_experience = models.CharField(max_length=255, null=True)

@@ -70,8 +70,8 @@ class User(PermissionsMixin, AbstractBaseUser):
     surname = models.CharField(max_length=254, null=True, blank=True)
 
     phone_regex = RegexValidator(regex=r'^\+?1?\d{11,13}$',
-                                 message="Phone number must be entered in the form of +919999999999.")
-    phone = models.CharField(validators=[phone_regex], max_length=17, unique=True, null=True, blank=True)
+                                 message="Phone number must be entered in the form of +7(708)791-22-65.")
+    phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
     email = models.EmailField(
         validators=[validators.validate_email],
         unique=True,
@@ -84,17 +84,22 @@ class User(PermissionsMixin, AbstractBaseUser):
     password = models.CharField(max_length=140, default='ADminadmin123', null=True)
     iin = models.CharField(unique=True, max_length=9, null=True)
     city = models.ForeignKey(to="City", on_delete=models.CASCADE, null=True)
+    MALE = 1
+    FEMALE = 2
+    UNDEFINED = 3
     GENDER = (
-        (1, 'Male'),
-        (2, 'Female'),
-        (3, 'Undefined'),
+        (MALE, 'Male'),
+        (FEMALE, 'Female'),
+        (UNDEFINED, 'Undefined'),
     )
-    gender = models.CharField(max_length=1, choices=GENDER, null=True)
+    gender = models.IntegerField(choices=GENDER, null=True, blank=True)
+    CLIENT = 1
+    DEVELOPER = 2
     ROLE = (
-        (1, 'Client'),
-        (2, 'Developer')
+        (CLIENT, 'Client'),
+        (DEVELOPER, 'Developer')
     )
-    role = models.CharField(max_length=1, choices=ROLE, null=True)
+    role = models.IntegerField(choices=ROLE, null=True, blank=True)
 
 
     is_staff = models.BooleanField(default=False)
