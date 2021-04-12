@@ -4,22 +4,26 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import logging
 
 from userauth.models import User, City
+from utils.developer_pagination.pagination import DeveloperPagination
 from .models import Skills, Stacks, Developer, DeveloperService, Rating, Review, ImageTab
 from . import serializers
 from utils.views import PaginationHandlerMixin, BasicPagination
 #birth_date = birth_date.strftime("%d.%m.%Y") if birth_date else None
 
+logger = logging.getLogger(__name__)
+
 class DeveloperProfiles(RetrieveModelMixin, ListModelMixin, viewsets.GenericViewSet):
-    serializer_class = serializers.DevelopersSerializer
+    serializer_class = serializers.StackDeveloperSerializer
     permission_classes = [AllowAny, ]
     serializer_action_classes = {
-        'list': serializers.DevelopersSerializer,
+        'list': serializers.StackDeveloperSerializer,
         'retrieve': serializers.FullInfoDeveloperSerializer,
     }
     queryset = Developer.objects.all()
-    # pagination_class = CustomPagination
+    pagination_class = DeveloperPagination
 
     def get_serializer_class(self):
         try:

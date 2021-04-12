@@ -118,26 +118,17 @@ class RatingSerializer(serializers.ModelSerializer):
         except:
             return 0
 
-
-
-class DeveloperServiceSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = DeveloperService
-        fields = ['service_title', 'service_description', 'price', 'price_fix']
-
-
 class DevelopersSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
-    stacks = StackTitleSerializer(many=True, read_only=True)
-    skills = SkillTitleSerializer(many=True, write_only=True)
+    stacks = StacksSerializer(many=True, read_only=True)
+    skills = SkillsSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField("get_rating_avg")
     rating_count = serializers.SerializerMethodField("get_rating_count")
     price = serializers.SerializerMethodField('get_price')
 
     class Meta:
         model = Developer
-        fields = ['id' ,"user", "stacks", "skills", "rating", "rating_count", "price"]
+        fields = ['id', "user", "stacks", "skills", "rating", "rating_count", "price"]
 
     def get_rating_count(self, obj):
         rating = Rating.objects.filter(developer=obj)
@@ -168,6 +159,27 @@ class DevelopersSerializer(serializers.ModelSerializer):
     def get_price(self, obj):
         service = DeveloperService.objects.get(developer=obj)
         return service.price
+
+class StackDeveloperSerializer(serializers.ModelSerializer):
+    developers = DevelopersSerializer(many=True, read_only=True)
+    class Meta:
+        model = Stacks
+        fields = ['id', 'title', 'developers']
+    #
+    # def get_stack_dev(self, obj):
+    #     stacks = Stacks.objects.all()
+    #     for stack in stacks:
+    #         developer = Developer.objects.filter(stacks_id=stack)
+    #         return DevelopersSerializer(instance=developer)
+
+class DeveloperServiceSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = DeveloperService
+        fields = ['service_title', 'service_description', 'price', 'price_fix']
+
+
+
 
 
 
