@@ -18,6 +18,9 @@ from .serializers import CitiesSerializer
 from .models import *
 from .serializers import LoginSerializer, OTPSerializer, PhoneOTPSerializer
 from .serializers import RegistrationSerializer
+import logging
+
+logger = logging.getLogger(__name__)
 
 class RegistrationStepOne(APIView):
     """
@@ -67,6 +70,7 @@ class RegistrationStepOne(APIView):
                 "status": True,
                 "detail": "Registration passed successfully"
             }
+
             return Response(
                 res,
                 status=status.HTTP_201_CREATED,
@@ -264,11 +268,14 @@ class RegistrationStepFive(APIView):
         """
 
         try:
+            logging.info('Some message')
+            logging.error('In try')
             data = request.data
             keys = request.META['HTTP_AUTHORIZATION']
             keys = keys.split()
             objOpt = PhoneOTP.objects.get(key_token=keys[1])
             if objOpt.email:
+                logging.error('In objopt')
                 user = User.objects.get(email=objOpt.email)
             #     user.phone = data['phone']
             # elif objOpt.phone:
@@ -297,6 +304,7 @@ class RegistrationStepFive(APIView):
             images.image_type = image_type
             images.image_url = url_name
             images.save()
+            logging.error('first message saved')
 
             """
             Image avatar
@@ -318,6 +326,7 @@ class RegistrationStepFive(APIView):
             images.image_type = image_type
             images.image_url = url_name
             images.save()
+            logging.error('second message saved')
 
             """
             Image passport
@@ -339,6 +348,7 @@ class RegistrationStepFive(APIView):
             images.image_type = image_type
             images.image_url = url_name
             images.save()
+            logging.error('third message saved')
             res = {
                 "status": True,
                 "detail": "Registration passed successfully"
@@ -348,6 +358,7 @@ class RegistrationStepFive(APIView):
                 status=status.HTTP_201_CREATED,
             )
         except Exception as e:
+            logging.error('in except')
             res = {
                 "status": False,
                 "detail": e
@@ -397,6 +408,7 @@ class ValidatePhoneSendOTP(APIView):
                         otp=key,
                         user_id=user.id
                     )
+                    logging.info('Some message')
                     # link = f'API-urls'
                     # requests.get(link)
                     return Response({
@@ -415,6 +427,7 @@ class ValidatePhoneSendOTP(APIView):
                     )
                     # link = f'API-urls'
                     # requests.get(link)
+                    logging.info('Some message')
                     return Response({
                         'status': True,
                         'detail': 'OTP sent successfully.',
@@ -427,6 +440,7 @@ class ValidatePhoneSendOTP(APIView):
                 })
 
         else:
+            logging.info('Some message')
             return Response({
                 'status': False,
                 'detail': 'Phone number is not given in post request.'
@@ -480,13 +494,16 @@ class ValidateOTP(APIView):
                         user_id = old.user_id
                         user = User.objects.get(id=user_id)
                         token = user.token
+
                         if user.is_joined == True:
+                            logging.info('Some message')
                             res = {
                                 "status": True,
                                 "registered": True,
                                 "token": token
                             }
                         else:
+                            logging.info('Some message')
                             res = {
                                 "status": True,
                                 "registered": False,
@@ -495,6 +512,8 @@ class ValidateOTP(APIView):
                         old.key_token = token
                         old.save()
                     else:
+                        logging.info('Some message')
+                        logging.error('Some message')
                         res = {
                             "status": False,
                             "registered": None,
@@ -514,6 +533,8 @@ class ValidateOTP(APIView):
                 #     count = count + 1
 
                 elif str(otp_sent) == None:
+                    logging.info('Some message')
+                    logging.error('Some message')
                     return Response({
                         'status': False,
                         'detail': 'OTP incorrect.'
@@ -523,11 +544,15 @@ class ValidateOTP(APIView):
                     'detail': 'Something gone wrong'
                 })
             else:
+                logging.info('Some message')
+                logging.error('Some message')
                 return Response({
                     'status': False,
                     'detail': 'First proceed via sending otp request.'
                 })
         else:
+            logging.info('Some message')
+            logging.error('Some message')
             return Response({
                 'status': False,
                 'detail': 'Please provide both phone and otp for validations'
