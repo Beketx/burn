@@ -4,19 +4,19 @@ import os
 import random
 
 import datetime as dt
-from datetime import datetime
 from django.core.files.storage import FileSystemStorage
 
 from rest_framework import status, viewsets
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from developer.models import *
+from burnkaz.celery.tasks import send_email_task
 from .serializers import CitiesSerializer
 from .models import *
-from .serializers import LoginSerializer, OTPSerializer, PhoneOTPSerializer
+from .serializers import LoginSerializer, OTPSerializer
 from .serializers import RegistrationSerializer
 import logging
 
@@ -173,11 +173,14 @@ class RegistrationStepThree(APIView):
             user.role = data['role']
             user.save()
             if Developer.objects.filter(user=user).exists():
-                developer = Developer.objects.filter(user=user).update(education=data['education'], about=data['about'],
-                                     work_experience=data['work_experience'])
+                developer = Developer.objects.filter(user=user).update(education=data['education'],
+                                                                       about=data['about'],
+                                                                       work_experience=data['work_experience'])
             else:
-                developer = Developer.objects.create(user=user, education=data['education'], about=data['about'],
-                                     work_experience=data['work_experience'])
+                developer = Developer.objects.create(user=user,
+                                                     education=data['education'],
+                                                     about=data['about'],
+                                                     work_experience=data['work_experience'])
             developer = Developer.objects.get(user=user)
             list_skills = data['skills']
             for skill_id in list_skills:
@@ -231,8 +234,10 @@ class RegistrationStepFour(APIView):
             #     user.email = data['email']
             user.role = data['role']
             user.save()
-            dev_service = DeveloperService.objects.create(service_title=data['service_title'], service_description=data['service_description'],
-                                                            price=data['price'], price_fix=data['price_fix'])
+            dev_service = DeveloperService.objects.create(service_title=data['service_title'],
+                                                          service_description=data['service_description'],
+                                                          price=data['price'],
+                                                          price_fix=data['price_fix'])
             Developer.objects.filter(user=user).update(dev_service=dev_service)
             res = {
                 "status": True,
@@ -409,6 +414,7 @@ class ValidatePhoneSendOTP(APIView):
                         user_id=user.id
                     )
                     logging.info('Some message')
+                    send_email_task.delay(email_to=email)
                     # link = f'API-urls'
                     # requests.get(link)
                     return Response({
@@ -417,7 +423,8 @@ class ValidatePhoneSendOTP(APIView):
                         'key': key
                     })
             except:
-                user = User.objects.create(email=email,is_joined=False)
+                send_email_task.delay(email_to=email)
+                user = User.objects.create(email=email, is_joined=False)
                 if key:
                     PhoneOTP.objects.create(
                         # name = name,

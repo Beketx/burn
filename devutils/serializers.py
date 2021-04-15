@@ -9,12 +9,12 @@ class SkillTitleSerializer(serializers.Serializer):
 
 
 
-class StacksSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Stacks
-        fields = ['id', 'title']
+class StacksSerializer(serializers.BaseSerializer):
 
-class SkillsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Skills
-        fields = ['id', 'title']
+    def to_representation(self, instance):
+        return instance.title
+
+class SkillsSerializer(serializers.BaseSerializer):
+
+    def to_representation(self, instance):
+        return instance.title

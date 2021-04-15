@@ -6,7 +6,8 @@ from .models import *
 class UserAdmin(BaseUserAdmin):
 	fieldsets = (
 		(None, {'fields': ('email', 'password', 'name', 'surname',
-						   'last_login', 'phone', 'role', 'iin', 'gender', 'is_joined')}),
+						   'last_login', 'phone', 'role', 'iin',
+						   'gender', 'is_joined', 'city')}),
 			  ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser',
 									'groups', 'user_permissions',
 									)

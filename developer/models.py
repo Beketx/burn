@@ -18,8 +18,8 @@ class Developer(models.Model):
     about = models.CharField(max_length=255, null=True)
     work_experience = models.CharField(max_length=255, null=True)
     dev_service = models.OneToOneField(to="DeveloperService", on_delete=models.CASCADE, null=True)
-    stacks_id = models.ManyToManyField(Stacks)
-    skills_id = models.ManyToManyField(Skills)
+    stacks_id = models.ManyToManyField(Stacks, related_name="developer_list_stacks")
+    skills_id = models.ManyToManyField(Skills, related_name="developer_list_skills")
     
     def __str__(self):
         return self.user.email

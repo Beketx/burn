@@ -1,9 +1,15 @@
 from rest_framework import serializers
 
 from userauth.serializers import UserSerializer
-from .models import Skills, Stacks, Developer, DeveloperService, Rating, Review, ImageTab
+from .models import Skills, Stacks, Developer, DeveloperService,\
+                    Rating, \
+                    Review,\
+                    ImageTab
 from userauth.models import User, City
-from devutils.serializers import StacksSerializer, StackTitleSerializer, SkillTitleSerializer, SkillsSerializer
+from devutils.serializers import StacksSerializer,\
+                                 StackTitleSerializer,\
+                                 SkillTitleSerializer,\
+                                 SkillsSerializer
 
 class ReviewSerializer(serializers.ModelSerializer):
     review_count = serializers.SerializerMethodField('get_review_count')
@@ -120,15 +126,16 @@ class RatingSerializer(serializers.ModelSerializer):
 
 class DevelopersSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
-    stacks = StacksSerializer(many=True, read_only=True)
-    skills = SkillsSerializer(many=True, read_only=True)
+    stacks_id = StacksSerializer(many=True, read_only=True)
+    skills_id = SkillsSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField("get_rating_avg")
     rating_count = serializers.SerializerMethodField("get_rating_count")
     price = serializers.SerializerMethodField('get_price')
 
     class Meta:
         model = Developer
-        fields = ['id', "user", "stacks", "skills", "rating", "rating_count", "price"]
+        fields = ['id', "user", "stacks_id", "skills_id",
+                  "rating", "rating_count", "price"]
 
     def get_rating_count(self, obj):
         rating = Rating.objects.filter(developer=obj)
@@ -161,10 +168,10 @@ class DevelopersSerializer(serializers.ModelSerializer):
         return service.price
 
 class StackDeveloperSerializer(serializers.ModelSerializer):
-    developers = DevelopersSerializer(many=True, read_only=True)
+    developer_list_stacks = DevelopersSerializer(many=True, read_only=True)
     class Meta:
         model = Stacks
-        fields = ['id', 'title', 'developers']
+        fields = ['id', 'title', 'developer_list_stacks']
     #
     # def get_stack_dev(self, obj):
     #     stacks = Stacks.objects.all()
@@ -177,11 +184,6 @@ class DeveloperServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeveloperService
         fields = ['service_title', 'service_description', 'price', 'price_fix']
-
-
-
-
-
 
 
 class FullInfoDeveloperSerializer(serializers.ModelSerializer):

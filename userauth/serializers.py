@@ -132,11 +132,10 @@ class PhoneOTPSerializer(serializers.ModelSerializer):
         fields = ['phone', 'otp']
 
 
-class CityTitleSerializer(serializers.ModelSerializer):
+class CityTitleSerializer(serializers.BaseSerializer):
 
-    class Meta:
-        model = City
-        fields = ['title']
+    def to_representation(self, instance):
+        return instance.title
 
 class UserSerializer(serializers.ModelSerializer):
     city = CityTitleSerializer(read_only=True, many=False)

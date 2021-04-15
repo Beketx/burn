@@ -18,7 +18,8 @@ class UserManager(BaseUserManager):
     inheriting from `BaseUserManager`, we get a lot of the same code used by
     Django to create a `User`.
 
-    All we have to do is override the `create_user` function which we will use
+    All we have to do is override the `create_user` function
+     which we will use
     to create `User` objects.
     """
 
@@ -65,13 +66,15 @@ class User(PermissionsMixin, AbstractBaseUser):
     Defines our custom user class.
     Username, email and password are required.
     """
-    username = models.CharField(max_length=3, null=True, blank=True, default="one")
+    username = models.CharField(max_length=3, null=True,
+                                blank=True, default="one")
     name = models.CharField(max_length=254, null=True, blank=True)
     surname = models.CharField(max_length=254, null=True, blank=True)
 
     phone_regex = RegexValidator(regex=r'^\+?1?\d{11,13}$',
-                                 message="Phone number must be entered in the form of +7(708)791-22-65.")
-    phone = models.CharField(max_length=20, unique=True, null=True, blank=True)
+                                message="Phone number must be entered in the form of +7(708)791-22-65.")
+    phone = models.CharField(max_length=20, unique=True,
+                             null=True, blank=True)
     email = models.EmailField(
         validators=[validators.validate_email],
         unique=True,
@@ -81,7 +84,8 @@ class User(PermissionsMixin, AbstractBaseUser):
     birth_date = models.DateField(null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True, null=True)
-    password = models.CharField(max_length=140, default='ADminadmin123', null=True)
+    password = models.CharField(max_length=140, default='ADminadmin123',
+                                null=True)
     iin = models.CharField(unique=True, max_length=9, null=True)
     city = models.ForeignKey(to="City", on_delete=models.CASCADE, null=True)
     MALE = 1
@@ -108,7 +112,8 @@ class User(PermissionsMixin, AbstractBaseUser):
 
     is_joined = models.BooleanField(default=True)
 
-    # The `USERNAME_FIELD` property tells us which field we will use to log in.
+    # The `USERNAME_FIELD` property tells us
+    # which field we will use to log in.
     USERNAME_FIELD = 'email'
 
     REQUIRED_FIELDS = ()
@@ -176,7 +181,8 @@ class User(PermissionsMixin, AbstractBaseUser):
 class PhoneOTP(models.Model):
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,14}$',
                                  message="Phone number must be entered in the form of +919999999999.")
-    phone = models.CharField(validators=[phone_regex], max_length=17, null=True)
+    phone = models.CharField(validators=[phone_regex], max_length=17,
+                             null=True)
     email = models.EmailField(
         validators=[validators.validate_email],
         blank=False,
@@ -197,14 +203,16 @@ class PhoneOTP(models.Model):
         Allows us to get a user's token by calling `user.token` instead of
         `user.generate_jwt_token().
 
-        The `@property` decorator above makes this possible. `token` is called
+        The `@property` decorator above makes this possible.
+         `token` is called
         a "dynamic property".
         """
         return self._generate_jwt_token()
 
     def _generate_jwt_token(self):
         """
-        Generates a JSON Web Token that stores this user's ID and has an expiry
+        Generates a JSON Web Token that stores this
+         user's ID and has an expiry
         date set to 60 days into the future.
         """
         dt = datetime.now() + timedelta(days=60)
