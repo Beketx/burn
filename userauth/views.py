@@ -386,11 +386,9 @@ class GetProfile(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, ]
     serializer_class = serializers.FullInfoDeveloperSerializer
     queryset = Developer.objects.all()
+
     def get_queryset(self):
-        keys = self.request.META['HTTP_AUTHORIZATION']
-        keys = keys.split()
-        objOpt = PhoneOTP.objects.get(key_token=keys[1])
-        devs = Developer.objects.filter(user__email=objOpt.email)
+        devs = Developer.objects.filter(user__email=self.request.user.email)
         return devs
 
 class LoginAPIView(APIView):

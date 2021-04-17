@@ -6,6 +6,6 @@ class Client(models.Model):
     company_name = models.CharField(max_length=100, null=True, blank=True)
 
 class DevClientInContact(models.Model):
-    dev_id = models.ForeignKey("developer.Developer", on_delete=models.DO_NOTHING, null=True)
+    dev_id = models.ManyToManyField("developer.Developer", null=True)
     dev_perm = models.BooleanField(null=True, default=False)
-    client_id = models.OneToOneField(to="Client", on_delete=models.CASCADE)
+    client_id = models.ForeignKey(to="Client", on_delete=models.CASCADE)

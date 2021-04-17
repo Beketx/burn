@@ -1,5 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+
+from client.models import Client, DevClientInContact
 from .models import User, PhoneOTP, City
 
 
@@ -137,12 +139,35 @@ class CityTitleSerializer(serializers.BaseSerializer):
     def to_representation(self, instance):
         return instance.title
 
+class PrivateField(serializers.ReadOnlyField):
+
+    def get_attribute(self, instance):
+        # print(instance)
+        client = Client.objects.get(user=self.context['request'].user)
+        contact = DevClientInContact.objects.get(client_id=client)
+        if contact.dev_perm:
+            print(1)
+            return super(PrivateField, self).get_attribute(instance.phone)
+        return None
+
 class UserSerializer(serializers.ModelSerializer):
     city = CityTitleSerializer(read_only=True, many=False)
-
+    # phone = PrivateField()
+    phone = serializers.SerializerMethodField("get_phone")
     class Meta:
         model = User
-        fields = ["name", "surname", "birth_date", "city"]
+        fields = ["name", "surname", "birth_date", "city", "phone"]
+    def get_phone(self, instance):
+        client = Client.objects.get(user=self.context['request'].user)
+        contacts = DevClientInContact.objects.filter(client_id=client, dev_id__user=instance)
+        print(instance.email)
+        try:
+            for contact in contacts:
+                if contact.dev_perm == True:
+                    return instance.phone
+        except:
+            return None
+
 
 class CitiesSerializer(serializers.ModelSerializer):
     class Meta:

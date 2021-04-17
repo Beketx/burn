@@ -10,6 +10,8 @@ from devutils.serializers import StacksSerializer,\
                                  StackTitleSerializer,\
                                  SkillTitleSerializer,\
                                  SkillsSerializer
+from client.models import DevClientInContact, Client
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     review_count = serializers.SerializerMethodField('get_review_count')
@@ -197,3 +199,18 @@ class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     class Meta:
         model = Developer
         fields = ['id', "user", "dev_service", "rating",  "review_count", "about", ]
+
+class DeveloperContactsSerializer(serializers.ModelSerializer):
+    client = serializers.SerializerMethodField('get_name')
+
+    class Meta:
+        model = DevClientInContact
+        fields = ['id', 'client_id', 'client', 'dev_perm']
+
+    def get_name(self, obj):
+        client = Client.objects.get(id=obj.client_id.id)
+        user = {
+            "name": client.user.name,
+            "surname": client.user.surname
+        }
+        return user
