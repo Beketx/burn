@@ -8,10 +8,11 @@ from django.core.files.storage import FileSystemStorage
 
 from rest_framework import status, viewsets
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from client.models import Client
 from developer.models import *
 from burnkaz.celery.tasks import send_email_task
 from .serializers import CitiesSerializer
@@ -19,6 +20,7 @@ from .models import *
 from .serializers import LoginSerializer, OTPSerializer
 from .serializers import RegistrationSerializer
 import logging
+from developer import serializers
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +68,14 @@ class RegistrationStepOne(APIView):
             user.iin = data['iin']
             user.role = data['role']
             user.save()
+            if data['role'] == 2:
+                developer = Developer.objects.create(user=user)
+            if data['role'] == 1:
+                client = Client.objects.create(user=user)
             res = {
                 "status": True,
-                "detail": "Registration passed successfully"
+                "detail": "Registration passed successfully",
+                "user-id": user.id
             }
 
             return Response(
@@ -127,7 +134,8 @@ class RegistrationStepTwo(APIView):
             user.save()
             res = {
                 "status": True,
-                "detail": "Registration passed successfully"
+                "detail": "Registration passed successfully",
+                "user-id": user.id
             }
             return Response(
                 res,
@@ -172,16 +180,13 @@ class RegistrationStepThree(APIView):
             user.work_place = data['work_place']
             user.role = data['role']
             user.save()
-            if Developer.objects.filter(user=user).exists():
-                developer = Developer.objects.filter(user=user).update(education=data['education'],
-                                                                       about=data['about'],
-                                                                       work_experience=data['work_experience'])
-            else:
-                developer = Developer.objects.create(user=user,
-                                                     education=data['education'],
-                                                     about=data['about'],
-                                                     work_experience=data['work_experience'])
-            developer = Developer.objects.get(user=user)
+            if data['role'] == 2:
+                if Developer.objects.filter(user=user).exists():
+                    developer = Developer.objects.filter(user=user).update(education=data['education'],
+                                                                           about=data['about'],
+                                                                           work_experience=data['work_experience'])
+
+                developer = Developer.objects.get(user=user)
             list_skills = data['skills']
             for skill_id in list_skills:
                 developer.skills_id.add(Skills.objects.get(id=skill_id))
@@ -190,7 +195,8 @@ class RegistrationStepThree(APIView):
                 developer.stacks_id.add(Stacks.objects.get(id=stack_id))
             res = {
                 "status": True,
-                "detail": "Registration passed successfully"
+                "detail": "Registration passed successfully",
+                "user-id": user.id
             }
             return Response(
                 res,
@@ -234,14 +240,16 @@ class RegistrationStepFour(APIView):
             #     user.email = data['email']
             user.role = data['role']
             user.save()
-            dev_service = DeveloperService.objects.create(service_title=data['service_title'],
-                                                          service_description=data['service_description'],
-                                                          price=data['price'],
-                                                          price_fix=data['price_fix'])
-            Developer.objects.filter(user=user).update(dev_service=dev_service)
+            if data['role'] == 2:
+                dev_service = DeveloperService.objects.create(service_title=data['service_title'],
+                                                              service_description=data['service_description'],
+                                                              price=data['price'],
+                                                              price_fix=data['price_fix'])
+                Developer.objects.filter(user=user).update(dev_service=dev_service)
             res = {
                 "status": True,
-                "detail": "Registration passed successfully"
+                "detail": "Registration passed successfully",
+                "user-id": user.id
             }
             return Response(
                 res,
@@ -356,7 +364,8 @@ class RegistrationStepFive(APIView):
             logging.error('third message saved')
             res = {
                 "status": True,
-                "detail": "Registration passed successfully"
+                "detail": "Registration passed successfully",
+                "user-id": user.id
             }
             return Response(
                 res,
@@ -372,6 +381,17 @@ class RegistrationStepFive(APIView):
                 res,
                 status=status.HTTP_403_FORBIDDEN
             )
+
+class GetProfile(ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [IsAuthenticated, ]
+    serializer_class = serializers.FullInfoDeveloperSerializer
+    queryset = Developer.objects.all()
+    def get_queryset(self):
+        keys = self.request.META['HTTP_AUTHORIZATION']
+        keys = keys.split()
+        objOpt = PhoneOTP.objects.get(key_token=keys[1])
+        devs = Developer.objects.filter(user__email=objOpt.email)
+        return devs
 
 class LoginAPIView(APIView):
     """

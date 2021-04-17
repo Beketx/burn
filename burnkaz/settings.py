@@ -60,7 +60,8 @@ LOCAL_APPS = [
     'userauth',
     'developer',
     'devutils',
-    'utils'
+    'utils',
+    'client'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + INSTALLED_APPS + LOCAL_APPS

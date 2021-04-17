@@ -59,3 +59,4 @@ class DeveloperService(models.Model):
     price = models.IntegerField(null=True)
     price_fix = models.BooleanField(default=True)
 
+
