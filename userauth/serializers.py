@@ -143,12 +143,15 @@ class PrivateField(serializers.ReadOnlyField):
 
     def get_attribute(self, instance):
         # print(instance)
-        client = Client.objects.get(user=self.context['request'].user)
-        contacts = DevClientInContact.objects.filter(client_id=client, dev_id__user=instance)
         try:
-            for contact in contacts:
-                if contact.dev_perm == True:
-                    return super(PrivateField, self).get_attribute(instance)
+            client = Client.objects.get(user=self.context['request'].user)
+            contacts = DevClientInContact.objects.filter(client_id=client, dev_id__user=instance)
+            try:
+                for contact in contacts:
+                    if contact.dev_perm == True:
+                        return super(PrivateField, self).get_attribute(instance)
+            except:
+                return None
         except:
             return None
 
@@ -161,14 +164,20 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["name", "surname", "birth_date", "city", "phone"]
 
     def get_phone(self, instance):
-        client = Client.objects.get(user=self.context['request'].user)
-        contacts = DevClientInContact.objects.filter(client_id=client, dev_id__user=instance)
         try:
-            for contact in contacts:
-                if contact.dev_perm == True:
-                    return instance.phone
-        except:
-            return None
+            try:
+                client = Client.objects.get(user=self.context['request'].user)
+            except Exception as e:
+                return str(e)
+            contacts = DevClientInContact.objects.filter(client_id=client, dev_id__user=instance)
+            try:
+                for contact in contacts:
+                    if contact.dev_perm == True:
+                        return instance.phone
+            except Exception as e:
+                raise str(e)
+        except Exception as e:
+            raise type(e)
 
 
 class CitiesSerializer(serializers.ModelSerializer):
