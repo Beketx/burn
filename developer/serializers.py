@@ -21,7 +21,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['review_count', 'user', 'review', 'rating']
+        fields = ['review_count', 'user', 'text', 'review', 'rating']
     def get_name(self, obj):
         dev = Developer.objects.get(obj)
         return dev.user.name
@@ -133,7 +133,7 @@ class DevelopersSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField("get_rating_avg")
     rating_count = serializers.SerializerMethodField("get_rating_count")
     price = serializers.SerializerMethodField('get_price')
-
+    print(2)
     class Meta:
         model = Developer
         fields = ['id', "user", "stacks_id", "skills_id",
@@ -185,20 +185,58 @@ class DeveloperServiceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DeveloperService
-        fields = ['service_title', 'service_description', 'price', 'price_fix']
+        fields = ['id', 'service_title', 'service_description', 'price', 'price_fix']
 
 
 class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     # birth_date = serializers.DateField(format="%d.%m.%Y")
     # city = serializers.CharField(read_only=False,write_only=False)
+    stacks_id = StacksSerializer(many=True, read_only=True)
+    skills_id = SkillsSerializer(many=True, read_only=True)
+    # rating = serializers.SerializerMethodField("get_rating_avg")
+    # rating_count = serializers.SerializerMethodField("get_rating_count")
+    # price = serializers.SerializerMethodField('get_price')
     rating = RatingSerializer(many=False, read_only=True)
     review_count = ReviewSerializer(many=True, read_only=True)
-    dev_service = DeveloperServiceSerializer(many=False)
-
+    dev_service = DeveloperServiceSerializer(many=False, read_only=True)
+    print(1)
     class Meta:
         model = Developer
-        fields = ['id', "user", "dev_service", "rating",  "review_count", "about", ]
+        fields = ['id', "user", "education", "dev_service",
+                  "stacks_id", "skills_id", "rating",
+                  "work_experience", "review_count", "about", ]
+
+
+    def get_rating_count(self, obj):
+        rating = Rating.objects.filter(developer=obj)
+        sum_rate = 0
+        count_rate = 0
+        for rate in rating:
+            all_rate = (rate.communication + rate.quality + rate.truth_review) / 3
+            sum_rate += all_rate
+            count_rate += 1
+        if count_rate == 0:
+            count_rate = 0
+        return count_rate
+
+    def get_rating_avg(self, obj):
+        rating = Rating.objects.filter(developer=obj)
+        sum_rate = 0
+        count_rate = 0
+        for rate in rating:
+            all_rate = (rate.communication + rate.quality + rate.truth_review)/3
+            sum_rate += all_rate
+            count_rate += 1
+        if count_rate > 0:
+            avg_rating = sum_rate / count_rate
+        else:
+            avg_rating = None
+        return avg_rating
+
+    def get_price(self, obj):
+        service = DeveloperService.objects.get(developer=obj)
+        return service.price
 
 class DeveloperContactsSerializer(serializers.ModelSerializer):
     client = serializers.SerializerMethodField('get_name')

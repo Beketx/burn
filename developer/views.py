@@ -51,7 +51,7 @@ class DeveloperProfiles(RetrieveModelMixin,
 
     def get_serializer_class(self):
         try:
-            return self.serialzier_action_classes[self.action]
+            return self.serializer_action_classes[self.action]
         except (KeyError, AttributeError):
             return super().get_serializer_class()
 

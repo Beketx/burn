@@ -161,7 +161,7 @@ class UserSerializer(serializers.ModelSerializer):
     # phone = serializers.SerializerMethodField("get_phone")
     class Meta:
         model = User
-        fields = ["name", "surname", "birth_date", "city", "phone"]
+        fields = ["name", "surname", "birth_date", "gender", "role", "city", "phone"]
 
     def get_phone(self, instance):
         try:

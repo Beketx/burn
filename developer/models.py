@@ -37,7 +37,7 @@ class Rating(models.Model):
 
 class Review(models.Model):
     text = models.TextField(null=True)
-    developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True)
+    developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True, related_name='developer')
     user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
 
 class ImageTab(models.Model):
