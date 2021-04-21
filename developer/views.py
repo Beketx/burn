@@ -38,7 +38,7 @@ class DeveloperProfiles(RetrieveModelMixin,
                         ListModelMixin,
                         viewsets.GenericViewSet):
     serializer_class = serializers.DevelopersSerializer
-    permission_classes = [IsAuthenticated, ]
+    permission_classes = [AllowAny, ]
     serializer_action_classes = {
         'list': serializers.DevelopersSerializer,
         'retrieve': serializers.FullInfoDeveloperSerializer
