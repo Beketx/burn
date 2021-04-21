@@ -200,7 +200,7 @@ class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     rating = RatingSerializer(many=False, read_only=True)
     review_count = ReviewSerializer(many=True, read_only=True)
     dev_service = DeveloperServiceSerializer(many=False, read_only=True)
-    print(1)
+
     class Meta:
         model = Developer
         fields = ['id', "user", "education", "dev_service",
