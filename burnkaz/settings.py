@@ -46,7 +46,7 @@ DJANGO_APPS = [
 INSTALLED_APPS = [
     'rest_framework',
     # 'django_extensions'
-    # 'django_filters',
+    'django_filters',
     # 'rest_framework_swagger',
     # 'corsheaders'
 ]
@@ -102,6 +102,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
         ),
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'userauth.authentication.JWTAuthentication',
         )
