@@ -16,6 +16,7 @@ from .models import Skills, Stacks, Developer, DeveloperService,\
                     Rating, Review, ImageTab
 from . import serializers
 from django_filters.rest_framework import FilterSet, filters
+from rest_framework import filters as searchers
 
 #birth_date = birth_date.strftime("%d.%m.%Y") if birth_date else None
 
@@ -63,10 +64,10 @@ class DeveloperProfiles(RetrieveModelMixin,
         'retrieve': serializers.FullInfoDeveloperSerializer
     }
     queryset = Developer.objects.filter(user__role=2)
-    filter_backends = [DjangoFilterBackend, ]
+    filter_backends = [DjangoFilterBackend, searchers.SearchFilter, ]
     filter_class = PriceFilter
     filterset_fields = ('stacks_id', 'education', 'skills_id', 'dev_service__price', 'user__city')
-    search_fields = ('stacks_id__title', 'user__name', 'education', 'dev_service__id')
+    search_fields = ('stacks_id__title', 'user__name', 'education', 'dev_service__id', 'user__city__title', 'about', )
     pagination_class = DeveloperPagination
 
     def get_serializer_class(self):
