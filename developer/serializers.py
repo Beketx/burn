@@ -166,8 +166,11 @@ class DevelopersSerializer(serializers.ModelSerializer):
         return avg_rating
 
     def get_price(self, obj):
-        service = DeveloperService.objects.get(developer=obj)
-        return service.price
+        try:
+            service = DeveloperService.objects.get(developer=obj)
+            return service.price
+        except:
+            return None
 
 class StackDeveloperSerializer(serializers.ModelSerializer):
     developer_list_stacks = DevelopersSerializer(many=True, read_only=True)
