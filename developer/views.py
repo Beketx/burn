@@ -11,6 +11,7 @@ from client.models import DevClientInContact
 from userauth.models import User, City
 from utils.developer_pagination.pagination import DeveloperPagination
 # from utils.filters import DeveloperFilterBackend, DeveloperFilter
+from utils.filters import PriceFilter
 from .models import Skills, Stacks, Developer, DeveloperService,\
                     Rating, Review, ImageTab
 from . import serializers
@@ -51,15 +52,6 @@ class DeveloperProfilesByStacks(RetrieveModelMixin,
 #                     flt[param] = request.query_params[param]
 #         return queryset.filter(**flt)
 
-class PriceFilter(FilterSet):
-    price = filters.RangeFilter(name='price')
-
-    class Meta:
-        model = DeveloperService
-        fields = {
-            'price': ['gt', 'lt']
-        }
-        # fields = ['price', ]
 
 class DeveloperProfiles(RetrieveModelMixin,
                         ListModelMixin,
@@ -71,8 +63,8 @@ class DeveloperProfiles(RetrieveModelMixin,
         'retrieve': serializers.FullInfoDeveloperSerializer
     }
     queryset = Developer.objects.filter(user__role=2)
-    filter_backends = [DjangoFilterBackend]
-    # filter_class = DeveloperFilter
+    filter_backends = [DjangoFilterBackend, ]
+    filter_class = PriceFilter
     filterset_fields = ('stacks_id', 'education', 'skills_id', 'dev_service__price', 'user__city')
     search_fields = ('stacks_id__title', 'user__name', 'education', 'dev_service__id')
     pagination_class = DeveloperPagination

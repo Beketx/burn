@@ -32,3 +32,17 @@
 #         fields = [
 #             'stacks_id'
 #         ]
+
+from django_filters import rest_framework as filters
+
+from developer.models import DeveloperService, Developer
+
+
+class PriceFilter(filters.FilterSet):
+    min_price = filters.NumberFilter(field_name='dev_service__price', lookup_expr='gte')
+    max_price = filters.NumberFilter(field_name='dev_service__price', lookup_expr='lte')
+
+
+    class Meta:
+        model = Developer
+        fields = ('dev_service__price', )
