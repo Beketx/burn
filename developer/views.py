@@ -66,7 +66,6 @@ class DeveloperProfiles(RetrieveModelMixin,
     queryset = Developer.objects.filter(user__role=2)
     filter_backends = [DjangoFilterBackend, searchers.SearchFilter, ]
     filter_class = PriceFilter
-    filterset_fields = ('stacks_id', 'education', 'skills_id', 'dev_service__price', 'user__city')
     search_fields = ('stacks_id__title', 'user__name', 'education', 'dev_service__id', 'user__city__title', 'about', )
     pagination_class = DeveloperPagination
 
