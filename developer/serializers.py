@@ -128,12 +128,12 @@ class RatingSerializer(serializers.ModelSerializer):
 
 class DevelopersSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
-    stacks_id = StacksSerializer(many=True, read_only=True)
+    stacks_id = StacksSerializer(many=False, read_only=True)
     skills_id = SkillsSerializer(many=True, read_only=True)
     rating = serializers.SerializerMethodField("get_rating_avg")
     rating_count = serializers.SerializerMethodField("get_rating_count")
     price = serializers.SerializerMethodField('get_price')
-    print(2)
+
     class Meta:
         model = Developer
         fields = ['id', "user", "stacks_id", "skills_id",

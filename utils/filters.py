@@ -37,11 +37,21 @@ from django_filters import rest_framework as filters
 
 from developer.models import DeveloperService, Developer
 
+# class ArrayFilter(filters.Filterset):
+#     stacks = filters.NumberFilter(field_name='dev_service__price')
+class IntegerListFilter(filters.Filter):
+    def filter(self, qs, value):
+        if value not in (None, ''):
+            integers = [v for v in value]
+            return qs.filter(**{'%s__%s' % (self.field_name, self.lookup_expr): integers})
+        return qs
 
 class PriceFilter(filters.FilterSet):
     min_price = filters.NumberFilter(field_name='dev_service__price', lookup_expr='gte')
     max_price = filters.NumberFilter(field_name='dev_service__price', lookup_expr='lte')
-
+    stacks = IntegerListFilter(field_name='stacks_id', lookup_expr='in')
+    skills = IntegerListFilter(field_name='skills_id', lookup_expr='in')
+    # skills = filters.NumberFilter(field_name='dev_service__price')
 
     class Meta:
         model = Developer

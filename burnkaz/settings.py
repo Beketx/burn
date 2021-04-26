@@ -102,6 +102,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
         ),
+    # 'DEFAULT_PAGINATION_CLASS': 'apps.commons.serializers.EmptyPagination',
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'userauth.authentication.JWTAuthentication',
@@ -259,3 +260,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "beketpy@gmail.com"
 EMAIL_HOST_PASSWORD = "TESTTEST17"
+
+# PAGINATION_SETTINGS = {
+#     'SHOW_FIRST_PAGE_WHEN_INVALID': True,
+# }
