@@ -1,6 +1,7 @@
 from django.urls import path
 
 from developer.views import DeveloperContacts
+from devutils.views import MyFavorites
 from userauth.views import CitiesView
 from developer import views
 from userauth.views import GetProfile

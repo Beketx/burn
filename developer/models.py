@@ -12,6 +12,8 @@ class Skills(models.Model):
     def __str__(self):
         return self.title
 
+
+
 class Developer(models.Model):
     user = models.OneToOneField('userauth.User', on_delete=models.CASCADE)
     education = models.CharField(max_length=140, null=True)
@@ -23,6 +25,11 @@ class Developer(models.Model):
     
     def __str__(self):
         return self.user.email
+
+class Favorites(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    developer = models.ForeignKey(Developer, on_delete=models.CASCADE, null=True, blank=True)
+    favorite_bool = models.BooleanField(default=False, null=True, blank=True)
 
 class Rating(models.Model):
     communication = models.FloatField(null=True)

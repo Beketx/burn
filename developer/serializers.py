@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
 from userauth.serializers import UserSerializer
-from .models import Skills, Stacks, Developer, DeveloperService,\
-                    Rating, \
-                    Review,\
-                    ImageTab
+from .models import Skills, Stacks, Developer, DeveloperService, \
+    Rating, \
+    Review, \
+    ImageTab, Favorites
 from userauth.models import User, City
 from devutils.serializers import StacksSerializer,\
                                  StackTitleSerializer,\
@@ -195,7 +195,7 @@ class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
     # birth_date = serializers.DateField(format="%d.%m.%Y")
     # city = serializers.CharField(read_only=False,write_only=False)
-    stacks_id = StacksSerializer(many=True, read_only=True)
+    stacks_id = StacksSerializer(many=False, read_only=True)
     skills_id = SkillsSerializer(many=True, read_only=True)
     # rating = serializers.SerializerMethodField("get_rating_avg")
     # rating_count = serializers.SerializerMethodField("get_rating_count")
@@ -255,3 +255,10 @@ class DeveloperContactsSerializer(serializers.ModelSerializer):
             "surname": client.user.surname
         }
         return user
+
+class FavoritesSerializer(serializers.ModelSerializer):
+    developer = DevelopersSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Favorites
+        fields = ['developer', ]

@@ -35,6 +35,7 @@ class DeveloperPagination(pagination.PageNumberPagination):
             self.page = paginator.page(page_number)
         except InvalidPage:
             msg = {
+                "count": 0,
                 "results": []
             }
             # msg = self.invalid_page_message.format(
