@@ -50,11 +50,11 @@ class AddFavorite(APIView):
             }
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            # res = {
-            #     'status': False,
-            #     'detail': 'Post Favorite not added'
-            # }
-            return Response(str(e), status=status.HTTP_403_FORBIDDEN)
+            res = {
+                'status': False,
+                'detail': str(e)
+            }
+            return Response(res, status=status.HTTP_403_FORBIDDEN)
             # res = {
             #     'status': False,
             #     'detail': 'Get Favorite not added'
@@ -67,6 +67,7 @@ class AddFavorite(APIView):
             users = request.user
             dev_id = data["developer_id"]
             dev = Developer.objects.get(id=dev_id)
+            print(1)
             if not Favorites.objects.filter(developer=dev).exists():
                 contact = Favorites.objects.create(developer=dev, favorite_bool=True, user=users)
             res = {
@@ -74,10 +75,10 @@ class AddFavorite(APIView):
                 'detail': 'Favorite added'
             }
             return Response(res, status=status.HTTP_200_OK)
-        except:
+        except Exception as e:
             res = {
                 'status': False,
-                'detail': 'Get Favorite not added'
+                'detail': str(e)
             }
             return Response(res, status=status.HTTP_403_FORBIDDEN)
 
