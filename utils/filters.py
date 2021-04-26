@@ -35,13 +35,23 @@
 
 from django_filters import rest_framework as filters
 
-from developer.models import DeveloperService, Developer
+from developer.models import DeveloperService, Developer, Stacks
+
 
 # class ArrayFilter(filters.Filterset):
 #     stacks = filters.NumberFilter(field_name='dev_service__price')
 class IntegerListFilter(filters.Filter):
     def filter(self, qs, value):
+        devs = Developer.objects.all()
+        stacks = Stacks.objects.all()
+        for dev in devs:
+            dev.stacks_id=stacks.first()
+            dev.save()
         if value not in (None, ''):
+            str = value
+            print(value)
+            str1 = str.replace(']', '').replace('[', '')
+            l = str1.replace('"', '').split(",")
             integers = [v for v in value]
             return qs.filter(**{'%s__%s' % (self.field_name, self.lookup_expr): integers})
         return qs
