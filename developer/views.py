@@ -1,5 +1,6 @@
 from rest_framework import viewsets, filters
-from rest_framework.mixins import RetrieveModelMixin, ListModelMixin
+from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
+                        CreateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated, \
                                             IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -12,8 +13,8 @@ from userauth.models import User, City
 from utils.developer_pagination.pagination import DeveloperPagination
 # from utils.filters import DeveloperFilterBackend, DeveloperFilter
 from utils.filters import PriceFilter
-from .models import Skills, Stacks, Developer, DeveloperService,\
-                    Rating, Review, ImageTab
+from .models import Skills, Stacks, Developer, DeveloperService, \
+    Rating, Review, ImageTab, Feedback
 from . import serializers
 from django_filters.rest_framework import FilterSet, filters
 from rest_framework import filters as searchers
@@ -96,3 +97,72 @@ class DeveloperContacts(viewsets.ViewSet):
         serializer.save()
         return Response(serializer.data)
 
+class ReviewView(ListModelMixin, RetrieveModelMixin,
+             CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = serializers.ReviewSerializer
+    permission_classes = [IsAuthenticated, ]
+    queryset = Review.objects.all()
+
+    def get_queryset(self):
+        return self.queryset.filter(user_id=self.request.user)
+
+    def perform_create(self, serializer):
+        return serializer.save(user_id=self.request.user)
+
+class RatingView(ListModelMixin, RetrieveModelMixin,
+             CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = serializers.RatingSerializer
+    permission_classes = [IsAuthenticated, ]
+    queryset = Rating.objects.all()
+
+    def get_queryset(self):
+        return self.queryset.filter(user_id=self.request.user)
+
+    def perform_create(self, serializer):
+        return serializer.save(user_id=self.request.user)
+
+class FeedbackView(ListModelMixin, RetrieveModelMixin,
+             CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = serializers.FeedbackSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        queryset = Feedback.objects.all()
+        return queryset.filter(user_id=self.request.user)
+
+    def perform_create(self, serializer):
+        return serializer.save(user_id=self.request.user)
+
+class FeedbackAPIView(APIView):
+    def post(self, request):
+        try:
+            data = request.data
+            dev = Developer.objects.get(id=data['developer_id'])
+            if dev:
+                rating = Rating.objects.create(communication=data['rating_id']['communication'],
+                                               quality=data['rating_id']['quality'],
+                                               truth_review=data['rating_id']['truth_review'],
+                                               developer_id=dev.id,
+                                               user_id=self.request.user)
+                review = Review.objects.create(text=data['review_id']['text'],
+                                               developer_id=dev.id,
+                                               user_id=self.request.user)
+                feeedback = Feedback.objects.create(rating_id=rating,
+                                                    review_id=review,
+                                                    developer_id=dev,
+                                                    user_id=self.request.user)
+            result = {
+                "status": True,
+                "description": "Feedback created"
+            }
+            return Response(result)
+        except Exception as e:
+            return Response(str(e))
+
+    def get(self, request):
+        feedbacks = Feedback.objects.filter(user_id=self.request.user)
+        serializer = serializers.FeedbackSerializer(feedbacks, many=True)
+        return Response(serializer.data)
+    @classmethod
+    def get_extra_actions(cls):
+        return []

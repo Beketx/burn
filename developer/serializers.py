@@ -4,7 +4,7 @@ from userauth.serializers import UserSerializer
 from .models import Skills, Stacks, Developer, DeveloperService, \
     Rating, \
     Review, \
-    ImageTab, Favorites
+    ImageTab, Favorites, Feedback
 from userauth.models import User, City
 from devutils.serializers import StacksSerializer,\
                                  StackTitleSerializer,\
@@ -262,3 +262,64 @@ class FavoritesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorites
         fields = ['developer', ]
+
+class ReviewSerializer(serializers.ModelSerializer):
+    # user_id = UserSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['text', 'developer']
+
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    # user_id = UserSerializer(many=False, read_only=True)
+    class Meta:
+        model = Rating
+        fields = ['communication', 'quality', 'truth_review',
+                    'developer']
+
+class RatingDevSerializer(serializers.ModelSerializer):
+    # user_id = UserSerializer(many=False, read_only=True)
+    class Meta:
+        model = Rating
+        fields = ['communication', 'quality', 'truth_review']
+
+    def create(self, validated_data):
+        developer = validated_data.get('developer_id')
+        ratings = Rating.objects.create(**validated_data)
+        dev = Developer.objects.get(id=developer)
+        dev.rating_id = ratings.id
+        # for building_data in buildings_data:
+        #     Building.objects.create(building_group=building_group, **building_data)
+        return ratings
+
+
+class ReviewRatingSerializer(serializers.ModelSerializer):
+    user_id = UserSerializer(many=False, read_only=True)
+    rating_id = RatingSerializer
+    review_id = ReviewSerializer
+
+    class Meta:
+        model = Review
+        fields = ['user_id', 'rating']
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    rating_id = RatingSerializer()
+    review_id = ReviewSerializer()
+    user_id = UserSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Feedback
+        fields = ['developer_id', 'rating_id', 'review_id', 'user_id']
+
+    # def create(self, validated_data):
+    #     review = validated_data.pop('review_id')
+    #     order = Review.objects.create(**review)
+    #     review = validated_data.pop('rating_id')
+    #     print(review)
+    #     order = Rating.objects.create(**review)
+    #     # instance = Equipment.objects.create(**validated_data)
+    #     # Assignment.objects.create(Order=order, Equipment=instance)
+    #     return order

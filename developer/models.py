@@ -22,7 +22,8 @@ class Developer(models.Model):
     dev_service = models.OneToOneField(to="DeveloperService", on_delete=models.CASCADE, null=True)
     stacks_id = models.ForeignKey(Stacks, on_delete=models.CASCADE, related_name="developer_list_stacks", null=True)
     skills_id = models.ManyToManyField(Skills, related_name="developer_list_skills")
-    
+    # rating_id = models.ManyToManyField(to="Rating", related_name='developer_rating')
+
     def __str__(self):
         return self.user.email
 
@@ -36,7 +37,7 @@ class Rating(models.Model):
     quality = models.FloatField(null=True)
     truth_review = models.FloatField(null=True)
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True)
-    user_id = models.IntegerField(null=True)
+    user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
 
     @property
     def rating_count(self, dev):
@@ -45,6 +46,12 @@ class Rating(models.Model):
 class Review(models.Model):
     text = models.TextField(null=True)
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True, related_name='developer')
+    user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
+
+class Feedback(models.Model):
+    developer_id = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True)
+    rating_id = models.ForeignKey(to="Rating", on_delete=models.CASCADE, null=True)
+    review_id = models.ForeignKey(to="Review", on_delete=models.CASCADE, null=True)
     user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
 
 class ImageTab(models.Model):
