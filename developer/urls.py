@@ -16,9 +16,6 @@ router.register('review', views.ReviewView, basename='review')
 router.register('rating', views.RatingView, basename='rating')
 # router.register('feedback', views.FeedbackAPIView, basename='review-rating')
 urlpatterns = router.urls
-# urlpatterns = [
-#     path('developer-profiles/', views.DeveloperProfiles.as_view()),
-#     # path('developer-profiles/<int:pk>/', views.DeveloperProfiles.as_view())
-# ]
+
 
 

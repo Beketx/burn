@@ -15,7 +15,11 @@ class ClientContactDev(APIView):
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request):
-        return Response("123")
+        res = {
+            'status': True,
+            'detail': 'Message to developer send'
+        }
+        return Response(res, status=status.HTTP_200_OK)
 
     def post(self, request):
         try:

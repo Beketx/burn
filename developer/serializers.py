@@ -177,12 +177,7 @@ class StackDeveloperSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stacks
         fields = ['id', 'title', 'developer_list_stacks']
-    #
-    # def get_stack_dev(self, obj):
-    #     stacks = Stacks.objects.all()
-    #     for stack in stacks:
-    #         developer = Developer.objects.filter(stacks_id=stack)
-    #         return DevelopersSerializer(instance=developer)
+
 
 class DeveloperServiceSerializer(serializers.ModelSerializer):
 
@@ -262,6 +257,10 @@ class FavoritesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Favorites
         fields = ['developer', ]
+
+"""
+REVIEW
+"""
 
 class ReviewSerializer(serializers.ModelSerializer):
     # user_id = UserSerializer(many=False, read_only=True)
