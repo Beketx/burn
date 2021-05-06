@@ -133,11 +133,23 @@ class DevelopersSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField("get_rating_avg")
     rating_count = serializers.SerializerMethodField("get_rating_count")
     price = serializers.SerializerMethodField('get_price')
-
+    is_favorite = serializers.SerializerMethodField('get_favorite')
     class Meta:
         model = Developer
         fields = ['id', "user", "stacks_id", "skills_id",
-                  "rating", "rating_count", "price"]
+                  "rating", "rating_count", "price",
+                  "is_favorite"]
+
+    def get_favorite(self, obj):
+        try:
+            # user = self.context['request'].user
+            request = self.context.get("request")
+            if request and hasattr(request, "user"):
+                user = request.user
+            fav = Favorites.objects.get(developer=obj, user=user)
+            return True
+        except:
+            return False
 
     def get_rating_count(self, obj):
         rating = Rating.objects.filter(developer=obj)
@@ -198,12 +210,18 @@ class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     rating = RatingSerializer(many=False, read_only=True)
     review_count = ReviewSerializer(many=True, read_only=True)
     dev_service = DeveloperServiceSerializer(many=False, read_only=True)
-
+    is_favoritex = serializers.BooleanField(read_only=True)
     class Meta:
         model = Developer
         fields = ['id', "user", "education", "dev_service",
                   "stacks_id", "skills_id", "rating",
-                  "work_experience", "review_count", "about", ]
+                  "work_experience", "review_count", "about",
+                  "is_favoritex"]
+
+    def restore_object(self, attrs, instance=None):
+        # is_favorite = attrs.pop('is_favoritex')
+        instance = super(FullInfoDeveloperSerializer, self).restore_object(attrs, instance=instance)
+        return instance
 
 
     def get_rating_count(self, obj):

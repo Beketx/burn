@@ -24,8 +24,14 @@ class Developer(models.Model):
     skills_id = models.ManyToManyField(Skills, related_name="developer_list_skills")
     # rating_id = models.ManyToManyField(to="Rating", related_name='developer_rating')
 
+    @property
+    def isFavorite(self):
+        if Favorites.objects.get(developer_id=self.id):
+            return True
+
     def __str__(self):
         return self.user.email
+
 
 class Favorites(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
