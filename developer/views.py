@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, \
                         CreateModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated, \
@@ -123,10 +123,17 @@ class FeedbackView(ListModelMixin, RetrieveModelMixin,
         return serializer.save(user_id=self.request.user)
 
 class FeedbackAPIView(APIView):
+
     def post(self, request):
         try:
             data = request.data
             dev = models.Developer.objects.get(id=data['developer_id'])
+            if dev.user.email == self.request.user.email:
+                result = {
+                    "status": False,
+                    "description": "You cannot review yourself"
+                }
+                return Response(result, status=status.HTTP_406_NOT_ACCEPTABLE)
             if dev:
                 rating = models.Rating.objects.create(communication=data['rating_id']['communication'],
                                                quality=data['rating_id']['quality'],
@@ -144,14 +151,15 @@ class FeedbackAPIView(APIView):
                 "status": True,
                 "description": "Feedback created"
             }
-            return Response(result)
+            return Response(result, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(str(e))
 
     def get(self, request):
         feedbacks = models.Feedback.objects.filter(user_id=self.request.user)
         serializer = serializers.FeedbackSerializer(feedbacks, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @classmethod
     def get_extra_actions(cls):
         return []

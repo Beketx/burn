@@ -49,6 +49,10 @@ class Rating(models.Model):
     def rating_count(self, dev):
         return Rating.objects.filter(developer=dev).count()
 
+    # @property
+    # def avg_rating(self):
+    #     return
+
 class Review(models.Model):
     text = models.TextField(null=True)
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True, related_name='developer')

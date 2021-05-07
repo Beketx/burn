@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated,\
@@ -26,7 +27,8 @@ class SkillsView(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
 class AddFavorite(APIView, DeveloperPagination):
     """
     {
-    dev_id:123
+    dev_id:123,
+    isFavorite:True,False
     }
     """
     permission_classes = [IsAuthenticated, ]
@@ -34,12 +36,12 @@ class AddFavorite(APIView, DeveloperPagination):
     def get(self, request):
         try:
             users = request.user
-            favs = Favorites.objects.filter(user=users)
-            print(favs)
+            favs = Favorites.objects.filter(Q(user=users) & Q(favorite_bool=True))
             data = []
-
-            favs = self.paginate_queryset(favs, request, view=self)
-            serializer = FavoritesSerializer(favs, many=True)
+            for fav in favs:
+                data.append(fav.developer)
+            favs = self.paginate_queryset(data, request, view=self)
+            serializer = DevelopersSerializer(favs, many=True, context={"request": request})
             return self.get_paginated_response(serializer.data)
         except Exception as e:
             res = {
@@ -54,13 +56,17 @@ class AddFavorite(APIView, DeveloperPagination):
             data = request.data
             users = request.user
             dev_id = data["developer_id"]
+            isFav = data["is_favorite"]
             if Developer.objects.get(id=dev_id):
                 dev = Developer.objects.get(id=dev_id)
-            if not Favorites.objects.filter(developer=dev).exists():
-                contact = Favorites.objects.create(developer=dev, favorite_bool=True, user=users)
+            if not Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists() \
+                    and isFav == True:
+                Favorites.objects.create(developer=dev, favorite_bool=isFav, user=users)
+            if isFav == False and Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists():
+                Favorites.objects.get(Q(developer=dev) & Q(user=users)).delete()
             res = {
-                'status': True,
-                'detail': 'Favorite added'
+                'status': isFav,
+                'detail': 'Favorite action accepted'
             }
             return Response(res, status=status.HTTP_200_OK)
         except Exception as e:

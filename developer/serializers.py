@@ -205,16 +205,17 @@ class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     stacks_id = StacksSerializer(many=False, read_only=True)
     skills_id = SkillsSerializer(many=True, read_only=True)
     # rating = serializers.SerializerMethodField("get_rating_avg")
-    # rating_count = serializers.SerializerMethodField("get_rating_count")
+    rating_count = serializers.SerializerMethodField("get_rating_count")
     # price = serializers.SerializerMethodField('get_price')
-    rating = RatingSerializer(many=False, read_only=True)
+    rating = RatingSerializer(many=True, read_only=True)
     review_count = ReviewSerializer(many=True, read_only=True)
     dev_service = DeveloperServiceSerializer(many=False, read_only=True)
     is_favoritex = serializers.BooleanField(read_only=True)
     class Meta:
         model = Developer
         fields = ['id', "user", "education", "dev_service",
-                  "stacks_id", "skills_id", "rating",
+                  "stacks_id", "skills_id", "rating", "rating",
+                  "rating_count",
                   "work_experience", "review_count", "about",
                   "is_favoritex"]
 

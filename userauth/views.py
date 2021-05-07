@@ -391,9 +391,13 @@ class GetProfile(viewsets.ViewSet):
         try:
             devs = Developer.objects.get(user=self.request.user)
             serializer_class = serializers.FullInfoDeveloperSerializer(devs, many=False)
+            return Response(serializer_class.data)
         except:
             serializer_class = serializers.UserSerializer(self.request.user, many=False)
-        return Response(serializer_class.data)
+            return Response({
+                "id": self.request.user.id,
+                "user": serializer_class.data
+            })
 
 class LoginAPIView(APIView):
     """
