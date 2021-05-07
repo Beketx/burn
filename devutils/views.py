@@ -1,3 +1,5 @@
+import logging
+
 from django.core.paginator import InvalidPage
 from django.db.models import Q
 from rest_framework import viewsets, status
@@ -15,7 +17,7 @@ from devutils import serializers
 from userauth.models import User
 from utils.developer_pagination.pagination import DeveloperPagination
 
-
+logger = logging.getLogger(__name__)
 class StacksView(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = serializers.StacksSerializer
     queryset = Stacks.objects.all()
@@ -58,8 +60,10 @@ class AddFavorite(APIView, DeveloperPagination):
                 dev = Developer.objects.get(id=dev_id)
             if not Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists() \
                     and isFav == True:
+                logging.info('if not isFavTrue')
                 Favorites.objects.create(developer=dev, favorite_bool=isFav, user=users)
             if isFav == False and Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists():
+                logging.info('if not isFavFalse')
                 Favorites.objects.get(Q(developer=dev) & Q(user=users)).delete()
             res = {
                 'status': True,
