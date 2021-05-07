@@ -199,7 +199,7 @@ MEDIA_URL = '/media/'
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'formatters': {
         'console': {
             'format': '%(name)-12s %(levelname)-8s %(message)s'
