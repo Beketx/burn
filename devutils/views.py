@@ -1,5 +1,7 @@
+from django.core.paginator import InvalidPage
 from django.db.models import Q
 from rest_framework import viewsets, status
+from rest_framework.exceptions import NotFound
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated,\
                                        IsAuthenticatedOrReadOnly, \
@@ -43,13 +45,8 @@ class AddFavorite(APIView, DeveloperPagination):
             favs = self.paginate_queryset(data, request, view=self)
             serializer = DevelopersSerializer(favs, many=True, context={"request": request})
             return self.get_paginated_response(serializer.data)
-        except Exception as e:
-            res = {
-                'status': False,
-                'detail': str(e)
-            }
-            return Response(res, status=status.HTTP_403_FORBIDDEN)
-
+        except:
+            return self.paginate_queryset(data, request, view=self)
 
     def post(self, request):
         try:
@@ -65,7 +62,7 @@ class AddFavorite(APIView, DeveloperPagination):
             if isFav == False and Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists():
                 Favorites.objects.get(Q(developer=dev) & Q(user=users)).delete()
             res = {
-                'status': isFav,
+                'status': True,
                 'detail': 'Favorite action accepted'
             }
             return Response(res, status=status.HTTP_200_OK)
