@@ -67,11 +67,11 @@ class BurnProject(viewsets.ModelViewSet):
             return serializers.ProjectAllSerializer
         return serializers.ProjectAllSerializer
 
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            self.permission_classes = [AllowAny, ]
-        if self.request.method == 'PUT':
-            self.permission_classes = [CustomPermission]
+    # def get_permissions(self):
+    #     if self.request.method == 'GET':
+    #         self.permission_classes = [AllowAny, ]
+    #     if self.request.method == 'PUT':
+    #         self.permission_classes = [CustomPermission]
 
     @action(methods=['GET'], detail=False,
             permission_classes=[IsAuthenticated, ],
