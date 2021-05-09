@@ -65,6 +65,7 @@ class AddFavorite(APIView, DeveloperPagination):
             if isFav == False and Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists():
                 logger.debug('if not isFavFalse')
                 Favorites.objects.get(Q(developer=dev) & Q(user=users)).delete()
+            logger.debug('nowhere')
             res = {
                 'status': True,
                 'detail': 'Favorite action accepted'
