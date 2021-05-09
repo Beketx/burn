@@ -59,10 +59,10 @@ class RegistrationStepOne(APIView):
                     'detail': "This IIN is already registered"
                 }
                 return Response(res, status=status.HTTP_403_FORBIDDEN)
-            if len(data['iin']) % 9 != 0:
+            if len(data['iin']) % 12 != 0:
                 res = {
                 'status': False,
-                'detail': 'IIN must be 9 digits'
+                'detail': 'IIN must be 12 digits'
                 }
                 return Response(res, status=status.HTTP_304_NOT_MODIFIED)
             user.iin = data['iin']

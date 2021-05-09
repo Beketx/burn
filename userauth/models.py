@@ -86,7 +86,7 @@ class User(PermissionsMixin, AbstractBaseUser):
     date_joined = models.DateTimeField(auto_now_add=True, null=True)
     password = models.CharField(max_length=140, default='ADminadmin123',
                                 null=True)
-    iin = models.CharField(unique=True, max_length=12, null=True)
+    iin = models.CharField(unique=True,max_length=14, null=True)
     city = models.ForeignKey(to="City", on_delete=models.CASCADE, null=True)
     MALE = 1
     FEMALE = 2
