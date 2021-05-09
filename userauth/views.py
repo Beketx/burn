@@ -446,7 +446,8 @@ class ValidatePhoneSendOTP(APIView):
                     return Response({
                         'status': True,
                         'detail': 'OTP sent successfully.',
-                        'key': key
+                        'key': key,
+                        'role': user.role
                     })
             except:
                 send_email_task.delay(email_to=email)
@@ -464,7 +465,8 @@ class ValidatePhoneSendOTP(APIView):
                     return Response({
                         'status': True,
                         'detail': 'OTP sent successfully.',
-                        'key': key
+                        'key': key,
+                        'role': None
                     })
             else:
                 return Response({

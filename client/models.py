@@ -63,6 +63,8 @@ class BurnProjectDevelopers(models.Model):
     price = models.IntegerField(default=10000, null=True,
                                 blank=True)
     accept_bool = models.BooleanField(null=True, blank=True)
+    stacks_id = models.ForeignKey(to="developer.Stacks", on_delete=models.CASCADE,
+                                  null=True)
     def __str__(self):
         return self.burn_project_id.title
 

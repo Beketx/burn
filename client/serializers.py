@@ -66,7 +66,8 @@ class ProjectDevelopers(serializers.ModelSerializer):
         fields = ('id',
                     'price',
                   'developer_id',
-                  'burn_project_id')
+                  'burn_project_id',
+                  'stacks_id')
     def create(self, validated_data):
         user = None
         request = self.context.get("request")
@@ -76,7 +77,8 @@ class ProjectDevelopers(serializers.ModelSerializer):
         instance = models.BurnProjectDevelopers.objects.create(
             price=validated_data['price'],
             developer_id=dev,
-            burn_project_id=validated_data['burn_project_id']
+            burn_project_id=validated_data['burn_project_id'],
+            stacks_id=validated_data['stacks_id']
         )
         return instance
 

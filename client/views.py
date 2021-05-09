@@ -50,6 +50,10 @@ class ClientContactDev(APIView):
             return Response(res, status=status.HTTP_403_FORBIDDEN)
 
 
+class CustomPermission(IsAuthenticated):
+    def has_permission(self, request, view):
+        return True
+
 class BurnProject(viewsets.ModelViewSet):
     queryset = models.BurnProject.objects.all()
     serializer_class = serializers.ProjectAllSerializer
@@ -63,18 +67,25 @@ class BurnProject(viewsets.ModelViewSet):
             return serializers.ProjectAllSerializer
         return serializers.ProjectAllSerializer
 
-    @action(methods=['GET', 'PUT'], detail=False,
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = [AllowAny, ]
+        if self.request.method == 'PUT':
+            self.permission_classes = [CustomPermission]
+
+    @action(methods=['GET'], detail=False,
             permission_classes=[IsAuthenticated, ],
             url_path='my-projects',)
     def my_projects(self, request,
                     *args, **kwargs):
         projects = self.queryset.filter(user_id=self.request.user)
         serializer_class = serializers.ProjectSerializer
-        if self.request.method == 'PUT':
-            serializer_class = serializers.ProjectAllSerializer
-        serializer = serializer_class(projects)
-        print(serializer.data)
+        serializer = serializer_class(projects, many=True)
         return Response(serializer.data)
+
+    # def perform_update(self, serializer):
+    #     user_instance = serializer.instance
+
 
 class DeveloperProjects(viewsets.ModelViewSet):
     queryset = models.BurnProjectDevelopers.objects.all()

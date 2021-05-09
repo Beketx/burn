@@ -7,9 +7,9 @@ from datetime import datetime
 
 
 class DeveloperPagination(pagination.PageNumberPagination):
-    page_size = 5
+    page_size = 20
     page_size_query_param = "page_size"
-    max_page_size = 10
+    max_page_size = 30
 
 
     def paginate_queryset(self, queryset, request, view=None):
