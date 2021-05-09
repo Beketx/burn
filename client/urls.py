@@ -7,5 +7,6 @@ from . import views
 urlpatterns = [
     path('incontact/', views.ClientContactDev.as_view(), name='incontact'),
     path('favorites/', AddFavorite.as_view(), name='incontact'),
-    path('feedback/', FeedbackAPIView.as_view(), name='feedback')
+    path('feedback/', FeedbackAPIView.as_view(), name='feedback'),
+    # path('burn-projects/', views.BurnProject, name='burns')
 ]

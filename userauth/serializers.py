@@ -155,6 +155,11 @@ class PrivateField(serializers.ReadOnlyField):
         except:
             return None
 
+class UserFIOSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["name", "surname"]
+
 class UserSerializer(serializers.ModelSerializer):
     city = CityTitleSerializer(read_only=True, many=False)
     phone = PrivateField()
@@ -162,6 +167,10 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["name", "surname", "birth_date", "gender", "role", "city", "phone"]
+
+    def validate_phone(self, phone):
+        if ['/', '.'] in phone:
+            raise serializers.ValidationError('Not accepting character in phone')
 
     def get_phone(self, instance):
         try:

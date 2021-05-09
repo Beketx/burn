@@ -40,7 +40,7 @@ class AddFavorite(APIView, DeveloperPagination):
     def get(self, request):
         try:
             users = request.user
-            favs = Favorites.objects.filter(Q(user=users) & Q(favorite_bool=True))
+            favs = Favorites.objects.get_favorites(users)
             data = []
             for fav in favs:
                 data.append(fav.developer)
@@ -60,10 +60,10 @@ class AddFavorite(APIView, DeveloperPagination):
                 dev = Developer.objects.get(id=dev_id)
             if not Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists() \
                     and isFav == True:
-                logging.info('if not isFavTrue')
+                logger.debug('if not isFavTrue')
                 Favorites.objects.create(developer=dev, favorite_bool=isFav, user=users)
             if isFav == False and Favorites.objects.filter(Q(developer=dev) & Q(user=users)).exists():
-                logging.info('if not isFavFalse')
+                logger.debug('if not isFavFalse')
                 Favorites.objects.get(Q(developer=dev) & Q(user=users)).delete()
             res = {
                 'status': True,
@@ -71,16 +71,17 @@ class AddFavorite(APIView, DeveloperPagination):
             }
             return Response(res, status=status.HTTP_200_OK)
         except Exception as e:
+            logger.debug('in except')
             res = {
                 'status': False,
                 'detail': str(e)
             }
             return Response(res, status=status.HTTP_403_FORBIDDEN)
 
-class MyFavorites(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated, ]
-    queryset = Favorites.objects.all()
-    def list(self, request):
-        queryset = Favorites.objects.filter(user=self.request.user)
-        serializer_class = DevelopersSerializer(queryset, many=True)
-        return Response(serializer_class.data)
+# class MyFavorites(viewsets.ViewSet):
+#     permission_classes = [IsAuthenticated, ]
+#     queryset = Favorites.objects.all()
+#     def list(self, request):
+#         queryset = Favorites.objects.filter(user=self.request.user)
+#         serializer_class = DevelopersSerializer(queryset, many=True)
+#         return Response(serializer_class.data)

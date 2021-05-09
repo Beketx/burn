@@ -1,5 +1,8 @@
 from django.db import models
+from django.db.models import Q
+
 from userauth.models import User
+from utils.developer_pagination.pagination import developer_photos_path, developer_photos_size, developer_file_extension
 
 
 class Stacks(models.Model):
@@ -12,6 +15,9 @@ class Skills(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name = 'Навык'
+        verbose_name_plural = 'Навыки'
 
 
 class Developer(models.Model):
@@ -32,11 +38,64 @@ class Developer(models.Model):
     def __str__(self):
         return self.user.email
 
+class FavoriteManager(models.Manager):
+
+    def for_user(self, user):
+        return self.filter(user=user).order_by('developer')
+
+    def get_favorites(self, user):
+       return self.filter(Q(user=user) & Q(favorite_bool=True))
+
+    # def get_favorites_by_user(self, user):
+    #     params = {
+    #         "user": user
+    #     }
+    #
+    #     result = Favorites.objects.raw("""
+    #         select developer from favorites
+    #         where user.id=%(user)s)
+    #     """, params)
+    #
+    #     return result
+
+    # def get_client_requests_of_resident(self, resident_id):
+    #     """
+    #     Список запросов клиентов по определенному ЖК
+    #     """
+    #     params = {
+    #         "resident_id": resident_id
+    #     }
+    #     result = Favorites.objects.raw("""
+    #                                    select t.client_request_id from client_request_tab t
+    #                                    join (select p.planirovka_id from planirovka_tab p
+    #                                    where p.resident_id=%(resident_id)s) t1 on t.planirovka_id = t1.planirovka_id
+    #                                    limit 3
+    #            """, params)
+    #     return result
+
+class TrueFavorites(models.QuerySet):
+
+    def get_queryset(self):
+        return self.objects.filter(favorite_bool=True)
+
+class NotFavorites(models.Manager):
+
+    def get_queryset(self):
+        return self.objects.filter(favorite_bool=False)
 
 class Favorites(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     developer = models.ForeignKey(Developer, on_delete=models.CASCADE, null=True, blank=True)
     favorite_bool = models.BooleanField(default=False, null=True, blank=True)
+
+    favorite_devs = TrueFavorites.as_manager()
+    not_favorite_devs = NotFavorites()
+    objects = FavoriteManager()
+
+class RatingManager(models.Manager):
+
+    def rating_count(self, dev):
+        self.objects.filter(developer=dev).count()
 
 class Rating(models.Model):
     communication = models.FloatField(null=True)
@@ -45,24 +104,124 @@ class Rating(models.Model):
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True)
     user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
 
+    objects = RatingManager()
+
     @property
     def rating_count(self, dev):
-        return Rating.objects.filter(developer=dev).count()
+        return self.objects.filter(developer=dev).count()
+
+    # @property
+    # def get_count_avg(self, obj):
+    #     try:
+    #         rating = self.objects.filter(developer=obj)
+    #         sum_rate = 0
+    #         count_rate = 0
+    #         for rate in rating:
+    #             all_rate = (rate.communication + rate.quality + rate.truth_review) / 3
+    #             sum_rate += all_rate
+    #             count_rate += 1
+    #         if count_rate == 0:
+    #             count_rate = 0
+    #         return count_rate
+    #     except:
+    #         return 0
+    #
+    # @property
+    # def get_rating_avg(self, obj):
+    #     try:
+    #         rating = self.objects.filter(developer=obj)
+    #         sum_rate = 0
+    #         count_rate = 0
+    #         for rate in rating:
+    #             all_rate = (rate.communication + rate.quality + rate.truth_review) / 3
+    #             sum_rate += all_rate
+    #             count_rate += 1
+    #         if count_rate > 0:
+    #             avg_rating = sum_rate / count_rate
+    #         else:
+    #             avg_rating = 0
+    #         return avg_rating
+    #     except:
+    #         return 0
+    #
+    # @property
+    # def get_communication(self, obj):
+    #     try:
+    #         rating = self.objects.filter(developer=obj)
+    #         sum_rate = 0
+    #         count_rate = 0
+    #         for rate in rating:
+    #             sum_rate += rate.communication
+    #             count_rate += 1
+    #         if count_rate > 0:
+    #             avg_communication = sum_rate/count_rate
+    #         else:
+    #             avg_communication = 0
+    #         return avg_communication
+    #     except:
+    #         return 0
+    #
+    # @property
+    # def get_quality(self, obj):
+    #     try:
+    #         rating = self.objects.filter(developer=obj)
+    #         sum_rate = 0
+    #         count_rate = 0
+    #         for rate in rating:
+    #             sum_rate += rate.quality
+    #             count_rate += 1
+    #         if count_rate > 0:
+    #             avg_quality = sum_rate/count_rate
+    #         else:
+    #             avg_quality = 0
+    #         return avg_quality
+    #     except:
+    #         return 0
+    #
+    # @property
+    # def get_truth(self, obj):
+    #     try:
+    #         rating = self.objects.filter(developer=obj)
+    #         sum_rate = 0
+    #         count_rate = 0
+    #         for rate in rating:
+    #             sum_rate += rate.truth_review
+    #             count_rate += 1
+    #         if count_rate > 0:
+    #             avg_truth_review = sum_rate/count_rate
+    #         else:
+    #             avg_truth_review = 0
+    #         return avg_truth_review
+    #     except:
+    #         return 0
 
     # @property
     # def avg_rating(self):
     #     return
+
+class ReviewManager(models.Manager):
+
+    def review_count(self, dev):
+        self.objects.filter(developer=dev).count()
 
 class Review(models.Model):
     text = models.TextField(null=True)
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True, related_name='developer')
     user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
 
+    objects = ReviewManager()
+
+class FeedbackManager(models.QuerySet):
+    def get_related(self):
+        return self.select_related('developer')
+
 class Feedback(models.Model):
     developer_id = models.ForeignKey(to="Developer", on_delete=models.CASCADE, null=True)
     rating_id = models.ForeignKey(to="Rating", on_delete=models.CASCADE, null=True)
     review_id = models.ForeignKey(to="Review", on_delete=models.CASCADE, null=True)
     user_id = models.ForeignKey("userauth.User", on_delete=models.CASCADE, null=True)
+
+    objects = FeedbackManager.as_manager()
 
 class ImageTab(models.Model):
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE)
@@ -76,6 +235,15 @@ class ImageType(models.Model):
     # front_photo = models.CharField(max_length=100, null=True)
     # avatar = models.CharField(max_length=100, null=True)
     # passport = models.CharField(max_length=100, null=True)
+
+class DeveloperImages(models.Model):
+    developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=developer_photos_path,
+                                  validators=[developer_photos_size,
+                                              developer_file_extension],
+                                   blank=True,
+                                   null=True)
+    image_type = models.ForeignKey(to="ImageType", on_delete=models.CASCADE)
 
 class DeveloperService(models.Model):
     service_title = models.CharField(max_length=100, null=True)

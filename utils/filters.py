@@ -26,3 +26,4 @@ class PriceFilter(filters.FilterSet):
         model = Developer
         fields = ('dev_service__price', 'stacks_id', 'education',
                   'skills_id', 'user__city', )
+

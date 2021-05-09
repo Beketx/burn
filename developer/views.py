@@ -45,11 +45,11 @@ class DeveloperProfiles(RetrieveModelMixin,
                         viewsets.GenericViewSet):
     serializer_class = serializers.DevelopersSerializer
     permission_classes = [AllowAny, ]
+    queryset = models.Developer.objects.filter(user__role=2)
     serializer_action_classes = {
         'list': serializers.DevelopersSerializer,
         'retrieve': serializers.FullInfoDeveloperSerializer
     }
-    queryset = models.Developer.objects.filter(user__role=2)
     filter_backends = [DjangoFilterBackend, searchers.SearchFilter, ]
     filter_class = PriceFilter
     search_fields = ('stacks_id__title', 'user__name', 'education', 'dev_service__id', 'user__city__title', 'about', )
