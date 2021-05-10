@@ -116,3 +116,40 @@ class UserProjects(viewsets.ModelViewSet):
             return serializers.ProjectUser
         if self.action == 'create':
             return serializers.ProjectUserPost
+
+class ArchiveProject(viewsets.ModelViewSet):
+    queryset = models.ArchiveProject.objects.all()
+    serializer_class = serializers.ProjectDelSerializer
+    # pagination_class = DeveloperPagination
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        instance = self.queryset.get(user_id=self.request.user)\
+        .select_related('burn_project_id')
+        # .values(
+        #         'burn_project_id__title',
+        #         'burn_project_id__description',
+        #         'burn_project_id__file_doc',
+        #         'burn_project_id__deadline',
+        #         'burn_project_id__user_id')
+        # instance = models.BurnProject.objects.filter(id=instance.burn_project_id_id)
+        # data = []
+        # for i in instance:
+        #     data.append(models.BurnProject.objects.get(id=i.burn_project_id))
+        return instance
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.ProjectDelSerializer
+        if self.action == 'retrieve':
+            return serializers.ProjectDelSerializer
+        return serializers.ProjectDelSerializer
+
+class DeleteProject(viewsets.ModelViewSet):
+    queryset = models.BurnProject.objects.all()
+    serializer_class = serializers.DelProjectSerializer
+    # pagination_class = DeveloperPagination
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        return self.queryset.filter(user_id=self.request.user)

@@ -11,6 +11,11 @@ class ProjectStacks(serializers.ModelSerializer):
         model = models.BurnProjectStacks
         fields = ('__all__')
 
+class DelProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.BurnProject
+        fields = ('id',)
+
 class ProjectSerializer(serializers.ModelSerializer):
     # stacks_id = ProjectStacks(many=True)
     stacks_id = serializers.SerializerMethodField("get_stacks")
@@ -30,7 +35,25 @@ class ProjectSerializer(serializers.ModelSerializer):
             burn_project_id=obj
         ).values('stacks_id', 'stacks_id__title')
         return stacks
+class ProjectDelSerializer(serializers.ModelSerializer):
+    # stacks_id = ProjectStacks(many=True)
+    stacks_id = serializers.SerializerMethodField("get_stacks")
+    id = serializers.IntegerField(write_only=True)
 
+    class Meta:
+        model = models.BurnProject
+        fields = ('id',
+                  'title',
+                  'description',
+                  'stacks_id',
+                  'deadline',
+                  'user_id')
+
+    def get_stacks(self, obj):
+        stacks = models.BurnProjectStacks.objects.filter(
+            burn_project_id=obj
+        ).values('stacks_id', 'stacks_id__title')
+        return stacks
 
 class ProjectAllSerializer(ProjectSerializer):
     file_doc = serializers.FileField()
