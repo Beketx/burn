@@ -490,8 +490,7 @@ class ValidatePhoneSendOTP(APIView):
                     return Response({
                         'status': True,
                         'detail': 'OTP sent successfully.',
-                        'key': key,
-                        'role': user.role
+                        'key': key
                     })
             except:
                 send_email_task.delay(email_to=email)
@@ -562,14 +561,16 @@ class ValidateOTP(APIView):
                             res = {
                                 "status": True,
                                 "registered": True,
-                                "token": token
+                                "token": token,
+                                'role': user.role
                             }
                         else:
                             logging.info('Some message')
                             res = {
                                 "status": True,
                                 "registered": False,
-                                "token": token
+                                "token": token,
+                                'role': None
                             }
                         old.key_token = token
                         old.save()
