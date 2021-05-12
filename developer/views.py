@@ -52,7 +52,7 @@ class DeveloperProfiles(RetrieveModelMixin,
     }
     filter_backends = [DjangoFilterBackend, searchers.SearchFilter, ]
     filter_class = PriceFilter
-    search_fields = ('stacks_id__title', 'user__name', 'education', 'dev_service__id', 'user__city__title', 'about', )
+    search_fields = ('stacks_id__title', 'user__name', 'user__surname', 'education', 'dev_service__id', 'user__city__title', 'about', )
     pagination_class = DeveloperPagination
 
     def get_serializer_class(self):

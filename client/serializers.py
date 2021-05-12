@@ -57,9 +57,10 @@ class ProjectDelSerializer(serializers.ModelSerializer):
 
 class ProjectAllSerializer(ProjectSerializer):
     file_doc = serializers.FileField()
-    stack_id = serializers.CharField(write_only=True)
+    stack_id =  serializers.CharField(write_only=True)
+    stacks = serializers.SerializerMethodField("get_stacks")
     class Meta(ProjectSerializer.Meta):
-        fields = ProjectSerializer.Meta.fields + ('file_doc', 'stack_id')
+        fields = ProjectSerializer.Meta.fields + ('file_doc', 'stacks', 'stacks_id')
 
     def create(self, validated_data):
         user = None
@@ -71,26 +72,32 @@ class ProjectAllSerializer(ProjectSerializer):
                                           deadline=validated_data['deadline'],
                                           file_doc=validated_data['file_doc'],
                                           user_id=user)
-        stacks = validated_data['stacks_id']
+        stacks = validated_data['stacks']
         stacks = literal_eval(stacks)
         for stack in stacks:
             stack_proj = models.BurnProjectStacks.objects.create(burn_project_id=instance,
                                                     stacks_id_id=stack)
         return instance
+    def get_stacks(self, obj):
+        stacks = models.BurnProjectStacks.objects.filter(
+            burn_project_id=obj
+        ).values('stacks_id', 'stacks_id__title')
+        return stacks
 
 
 
 
 class ProjectDevelopers(serializers.ModelSerializer):
-    # developer_id = DeveloperFIOSerializer(many=False,
-    #                                     read_only=True)
-    developer_id = serializers.SerializerMethodField('get_user')
+    developer_id = DeveloperFIOSerializer(many=False,
+                                        read_only=True)
+    developers_id = serializers.SerializerMethodField('get_user')
     class Meta:
         model = models.BurnProjectDevelopers
         fields = (
                   'id',
                   'accept_bool',
                   'developer_id',
+                  'developers_id',
                   'burn_project_id',
                   )
     def create(self, validated_data):
@@ -118,12 +125,15 @@ class ProjectDevelopers(serializers.ModelSerializer):
 class ProjectUser(serializers.ModelSerializer):
     developer_id = DeveloperFIOSerializer(many=False,
                                         read_only=True)
+    user_id = serializers.SerializerMethodField('get_user')
     class Meta:
         model = models.BurnProjectDevelopers
         fields = ('id',
                   'accept_bool',
                   'developer_id',
+                  'user_id',
                   'burn_project_id')
+
     def create(self, validated_data):
         user = None
         request = self.context.get("request")
@@ -133,9 +143,18 @@ class ProjectUser(serializers.ModelSerializer):
         instance = models.BurnProjectDevelopers.objects.create(
             price=validated_data['price'],
             developer_id=dev,
-            burn_project_id=validated_data['burn_project_id']
+            burn_project_id=validated_data['burn_project_id'],
+            stacks_id=validated_data['stacks_id']
         )
         return instance
+
+    def get_user(self, obj):
+        user = obj.burn_project_id.user_id
+        return {"id": user.id,
+                "user": {
+                    "name": user.name,
+                    "surname": user.surname
+                }}
 
 class ProjectUserPost(serializers.ModelSerializer):
     # developer_id = DeveloperFIOSerializer(many=False,
