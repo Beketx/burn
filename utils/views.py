@@ -15,27 +15,33 @@ from utils.serializers import DevAvatarsSerializer
 
 class ML(APIView):
 
+    parser_classes = (MultiPartParser, )
+
     def post(self, request):
-        data = request.data
-
-
-        date = datetime.today().strftime('%Y-%m-%d')
-        folder = 'media/' + str(date) + 'ml/'
-        myfile = request.FILES['document']
-        fileName, fileExtension = os.path.splitext(myfile.name)
-        myfile.name = 'passport' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
-        url_name = 'media/' + str(date) + '/' + str(myfile.name)
-        fs = FileSystemStorage(location=folder)
-        fileName = fs.save(myfile.name, myfile)
-        payload = {
-            'document': url_name
-        }
-        url = 'http://138.68.184.57:5000/compare-faces/'
-        result = requests.post(url, data=payload)
-        if result.status_code == 200:
-            return Response({"Status": 200})
-        else:
-            return {"Status": 404}
+        print(request)
+        try:
+            data = request.data
+            date = datetime.today().strftime('%Y-%m-%d')
+            folder = 'media/' + str(date) + 'ml/'
+            x = request.FILES
+            myfile = x['document']
+            fileName, fileExtension = os.path.splitext(myfile.name)
+            myfile.name = 'passport' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+            url_name = 'media/' + str(date) + '/' + str(myfile.name)
+            fs = FileSystemStorage(location=folder)
+            fileName = fs.save(myfile.name, myfile)
+            y = DeveloperImages.objects.all()[:1].get()
+            payload = {
+                'document': y.image
+            }
+            url = 'http://138.68.184.57:5000/compare-faces'
+            result = requests.post(url, files=payload)
+            if result.status_code == 200:
+                return Response(result)
+            else:
+                return Response({"Status": 404})
+        except Exception as e:
+            return Response(str(e))
 
 class MLViewSet(viewsets.ModelViewSet):
     queryset = DeveloperImages.objects.all()

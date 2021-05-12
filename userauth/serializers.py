@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 
 from client.models import Client, DevClientInContact
+from developer.models import Developer
 from .models import User, PhoneOTP, City
 
 
@@ -160,6 +161,12 @@ class UserFIOSerializer(serializers.ModelSerializer):
         model = User
         fields = ["name", "surname"]
 
+class UserDevSerializer(serializers.ModelSerializer):
+    city = CityTitleSerializer(read_only=True, many=False)
+    class Meta:
+        model = User
+        fields = ["name", "surname", "birth_date", "gender", "role", "city", "phone"]
+
 class UserSerializer(serializers.ModelSerializer):
     city = CityTitleSerializer(read_only=True, many=False)
     phone = PrivateField()
@@ -174,6 +181,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_phone(self, instance):
         try:
+            if Developer.objects.get(user=self.context['request'].user):
+                dev = Developer.objects.get(user=self.context['request'].user)
+                if dev.user.email == self.context['request'].user.email:
+                    return instance.phone
             try:
                 client = Client.objects.get(user=self.context['request'].user)
             except Exception as e:

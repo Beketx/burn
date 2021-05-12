@@ -117,6 +117,8 @@ WSGI_APPLICATION = 'burnkaz.wsgi.application'
 
 AUTH_USER_MODEL = 'userauth.User'
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -125,9 +127,15 @@ DATABASES = {
         'PASSWORD': env.str("DB_PASSWORD"),
         'HOST': env.str("DB_HOST"),
         'PORT': env.str("DB_PORT"),
+        'TEST': {
+            'NAME': 'test_burn',
+        }
     }
 }
 
+import sys
+if 'test' in sys.argv or 'test_coverage' in sys.argv:
+    DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

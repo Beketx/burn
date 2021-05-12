@@ -14,7 +14,7 @@ router.register('my-profile', GetProfile, basename='myprof')
 router.register('developer-contact', DeveloperContacts, basename='devcontact')
 router.register('review', views.ReviewView, basename='review')
 router.register('rating', views.RatingView, basename='rating')
-# router.register('feedback', views.FeedbackAPIView, basename='review-rating')
+router.register('feedback', views.FeedbackAPIView, basename='review-rating')
 urlpatterns = router.urls
 
 

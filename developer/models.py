@@ -238,7 +238,7 @@ class ImageType(models.Model):
 
 class DeveloperImages(models.Model):
     developer = models.ForeignKey(to="Developer", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=developer_photos_path,
+    image = models.ImageField(upload_to="media",
                                   validators=[developer_photos_size,
                                               developer_file_extension],
                                    blank=True,

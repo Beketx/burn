@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from userauth.serializers import UserSerializer, UserFIOSerializer
+from userauth.serializers import UserSerializer, UserFIOSerializer, UserDevSerializer
 from .models import Skills, Stacks, Developer, DeveloperService, \
     Rating, \
     Review, \
@@ -14,26 +14,21 @@ from client.models import DevClientInContact, Client
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    review_count = serializers.SerializerMethodField('get_review_count')
-    user = serializers.SerializerMethodField('get_name')
-    review = serializers.SerializerMethodField('get_review')
-    rating = serializers.SerializerMethodField('get_rating')
+    # review_count = serializers.SerializerMethodField('get_review_count')
+    # user = serializers.SerializerMethodField('get_name')
+    # review = serializers.SerializerMethodField('get_review')
+    # rating = serializers.SerializerMethodField('get_rating')
 
     class Meta:
         model = Review
-        fields = ['review_count', 'user', 'text', 'review', 'rating']
+        fields = ['developer', 'user_id', 'text']
+                  # 'review', 'rating']
     def get_name(self, obj):
-        dev = Developer.objects.get(obj)
-        return dev.user.name
-    def get_review_count(self, obj):
-        review = Review.objects.filter(developer=obj).count()
-        return review
-    def get_review(self, obj):
-        review = Review.objects.filter(developer=obj)
-        return review.text
-    def get_rating(self, obj):
-        rating = Rating.objects.filter(developer=obj)
-        return (rating.communication+rating.quality+rating.truth_review)/3
+        # dev = Developer.objects.get(obj)
+        return obj.user.name
+
+
+
 
 class RatingSerializer(serializers.ModelSerializer):
     # average_rating = serializers.IntegerField(source='get_count_avg')
@@ -218,6 +213,89 @@ class DeveloperServiceSerializer(serializers.ModelSerializer):
 
 class FullInfoDeveloperSerializer(serializers.ModelSerializer):
     user = UserSerializer(many=False, read_only=True)
+    # birth_date = serializers.DateField(format="%d.%m.%Y")
+    # city = serializers.CharField(read_only=False,write_only=False)
+    stacks_id = StacksSerializer(many=False, read_only=True)
+    skills_id = SkillsSerializer(many=True, read_only=True)
+    rating = serializers.SerializerMethodField("get_rating_avg")
+    rating_count = serializers.SerializerMethodField("get_rating_count")
+    price = serializers.SerializerMethodField('get_price')
+    review = serializers.SerializerMethodField('get_review')
+    review_count = serializers.SerializerMethodField('get_review_count')
+    # rating = RatingSerializer(many=True, read_only=True)
+    # review = ReviewSerializer(source='review_set', many=True, read_only=True)
+    dev_service = DeveloperServiceSerializer(many=False, read_only=True)
+    is_favoritex = serializers.BooleanField(read_only=True)
+    class Meta:
+        model = Developer
+        fields = ['id', "user", "education", "dev_service",
+                  "stacks_id", "skills_id", "rating","rating_count",
+                  "price", "review","review_count",
+                  "work_experience", "about",
+                  "is_favoritex"]
+
+    def restore_object(self, attrs, instance=None):
+        # is_favorite = attrs.pop('is_favoritex')
+        instance = super(FullInfoDeveloperSerializer, self).restore_object(attrs, instance=instance)
+        return instance
+
+    def get_review_count(self, obj):
+        review = Review.objects.filter(developer=obj).count()
+        return review
+
+    def get_review(self, obj):
+        try:
+            data = []
+            reviews = Review.objects.filter(developer=obj)
+            ratings = Rating.objects.filter(developer=obj)
+            for review in reviews:
+                rate = None
+                rating = Rating.objects.filter(developer=obj, user_id=review.user_id)
+                try:
+                    rate = (rating.communication + rating.quality + rating.truth_review) / 3
+                except:
+                    rate = None
+                res = {"user_id": {"name": obj.user.name,
+                                   "surname": obj.user.surname},
+                       "text": review.text,
+                       "rating": rate
+                       }
+                data.append(res)
+            return data
+        except:
+            return None
+    def get_rating_count(self, obj):
+        rating = Rating.objects.filter(developer=obj)
+        sum_rate = 0
+        count_rate = 0
+        for rate in rating:
+            all_rate = (rate.communication + rate.quality + rate.truth_review) / 3
+            sum_rate += all_rate
+            count_rate += 1
+        if count_rate == 0:
+            count_rate = 0
+        return count_rate
+
+    def get_rating_avg(self, obj):
+        rating = Rating.objects.filter(developer=obj)
+        sum_rate = 0
+        count_rate = 0
+        for rate in rating:
+            all_rate = (rate.communication + rate.quality + rate.truth_review)/3
+            sum_rate += all_rate
+            count_rate += 1
+        if count_rate > 0:
+            avg_rating = sum_rate / count_rate
+        else:
+            avg_rating = None
+        return avg_rating
+
+    def get_price(self, obj):
+        service = DeveloperService.objects.get(developer=obj)
+        return service.price
+
+class DeveloperProfileSerializer(serializers.ModelSerializer):
+    user = UserDevSerializer(many=False, read_only=True)
     # birth_date = serializers.DateField(format="%d.%m.%Y")
     # city = serializers.CharField(read_only=False,write_only=False)
     stacks_id = StacksSerializer(many=False, read_only=True)

@@ -4,6 +4,8 @@ import os
 import random
 
 import datetime as dt
+
+import requests
 from django.core.files.storage import FileSystemStorage
 
 from rest_framework import status, viewsets
@@ -190,9 +192,9 @@ class RegistrationStepThree(APIView):
             list_skills = data['skills']
             for skill_id in list_skills:
                 developer.skills_id.add(Skills.objects.get(id=skill_id))
-            list_stacks = data['stacks']
-            for stack_id in list_stacks:
-                developer.stacks_id.add(Stacks.objects.get(id=stack_id))
+            list_stacks = Stacks.objects.get(id=data['stacks'])
+            developer.stacks_id = list_stacks
+            developer.save()
             res = {
                 "status": True,
                 "detail": "Registration passed successfully",
@@ -300,67 +302,109 @@ class RegistrationStepFive(APIView):
             """
             Image Front
             """
-            date = datetime.today().strftime('%Y-%m-%d')
-            folder = 'media/' + str(date) + '/front_photo/'
-            myfile = request.FILES['front_photo']
-            fileName, fileExtension = os.path.splitext(myfile.name)
-            myfile.name = 'front_photo' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
-            url_name = 'media/' + str(date) + '/front_photo/' + str(myfile.name)
-            fs = FileSystemStorage(location=folder)
-            file_name = fs.save(myfile.name, myfile)
-            file_url = fs.url(file_name)
-            timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            images = ImageTab()
-            images.developer = developer
-            image_type = ImageType.objects.get(type_id=1)
-            images.image_type = image_type
-            images.image_url = url_name
-            images.save()
+            # date = datetime.today().strftime('%Y-%m-%d')
+            # folder = 'media/' + str(date) + '/front_photo/'
+            # myfile = request.FILES['front_photo']
+            # fileName, fileExtension = os.path.splitext(myfile.name)
+            # myfile.name = 'front_photo' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+            # url_name = 'media/' + str(date) + '/front_photo/' + str(myfile.name)
+            # fs = FileSystemStorage(location=folder)
+            # file_name = fs.save(myfile.name, myfile)
+            # file_url = fs.url(file_name)
+            # timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            # images = ImageTab()
+            # images.developer = developer
+            # image_type = ImageType.objects.get(type_id=1)
+            # images.image_type = image_type
+            # images.image_url = url_name
+            # images.save()
+            image = DeveloperImages.objects.create(
+                                    developer=developer,
+                                    image = request.FILES['front_photo'],
+                                    image_type = ImageType.objects.get(type_id=1)
+            )
+            payload = {
+                'document': image.image
+            }
+            url = 'http://138.68.184.57:5000/compare-faces'
+            result = requests.post(url, files=payload)
+            if result.status_code == 200:
+                return Response(result)
+            else:
+                return Response({"Status": 404})
             logging.error('first message saved')
 
             """
             Image avatar
             """
-            date = datetime.today().strftime('%Y-%m-%d')
-            folder = 'media/' + str(date) + '/avatar/'
-            myfile = request.FILES['avatar']
-            fileName, fileExtension = os.path.splitext(myfile.name)
-            myfile.name = 'avatar' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
-            url_name = 'media/' + str(date) + '/avatar/' + str(myfile.name)
-            fs = FileSystemStorage(location=folder)
-            file_name = fs.save(myfile.name, myfile)
-            file_url = fs.url(file_name)
-            timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            images = ImageTab()
-            images.developer = developer
-            image_type = ImageType.objects.get(type_id=2)
-            images.image_type = image_type
-            images.image_url = url_name
-            images.save()
+            # date = datetime.today().strftime('%Y-%m-%d')
+            # folder = 'media/' + str(date) + '/avatar/'
+            # myfile = request.FILES['avatar']
+            # fileName, fileExtension = os.path.splitext(myfile.name)
+            # myfile.name = 'avatar' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+            # url_name = 'media/' + str(date) + '/avatar/' + str(myfile.name)
+            # fs = FileSystemStorage(location=folder)
+            # file_name = fs.save(myfile.name, myfile)
+            # file_url = fs.url(file_name)
+            # timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            # images = ImageTab()
+            # images.developer = developer
+            # image_type = ImageType.objects.get(type_id=2)
+            # images.image_type = image_type
+            # images.image_url = url_name
+            # images.save()
+            image = DeveloperImages.objects.create(
+                                    developer=developer,
+                                    image = request.FILES['front_photo'],
+                                    image_type = ImageType.objects.get(type_id=2)
+            )
+            payload = {
+                'document': image.image
+            }
+            url = 'http://138.68.184.57:5000/compare-faces'
+            result = requests.post(url, files=payload)
+            if result.status_code == 200:
+                return Response(result)
+            else:
+                return Response({"Status": 404})
             logging.error('second message saved')
 
             """
             Image passport
             """
-            date = datetime.today().strftime('%Y-%m-%d')
-            folder = 'media/' + str(date) + '/passport/'
-            myfile = request.FILES['passport']
-            fileName, fileExtension = os.path.splitext(myfile.name)
-            myfile.name = 'passport' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
-            url_name = 'media/' + str(date) + '/passport/' + str(myfile.name)
-            fs = FileSystemStorage(location=folder)
-            file_name = fs.save(myfile.name, myfile)
-            file_url = fs.url(file_name)
-            timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            images = ImageTab()
-            images.developer = developer
-            image_type = ImageType.objects.get(type_id=3)
-            images.image_type = image_type
-            images.image_url = url_name
-            images.save()
+            # date = datetime.today().strftime('%Y-%m-%d')
+            # folder = 'media/' + str(date) + '/passport/'
+            # myfile = request.FILES['passport']
+            # fileName, fileExtension = os.path.splitext(myfile.name)
+            # myfile.name = 'passport' + hashlib.md5(fileName.encode('utf-8')).hexdigest() + fileExtension
+            # url_name = 'media/' + str(date) + '/passport/' + str(myfile.name)
+            # fs = FileSystemStorage(location=folder)
+            # file_name = fs.save(myfile.name, myfile)
+            # file_url = fs.url(file_name)
+            # timenow = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            # check_date = dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            # images = ImageTab()
+            # images.developer = developer
+            # image_type = ImageType.objects.get(type_id=3)
+            # images.image_type = image_type
+            # images.image_url = url_name
+            # images.save()
+            image = DeveloperImages.objects.create(
+                                    developer=developer,
+                                    image=request.FILES['front_photo'],
+                                    image_type=ImageType.objects.get(type_id=3)
+            )
+            payload = {
+                'document': image.image
+            }
+            url = 'http://138.68.184.57:5000/compare-faces'
+            result = requests.post(url, files=payload)
+            if result.status_code == 200:
+                return Response(result)
+            else:
+                return Response({"Status": 404})
             logging.error('third message saved')
             res = {
                 "status": True,
@@ -384,13 +428,13 @@ class RegistrationStepFive(APIView):
 
 class GetProfile(viewsets.ViewSet):
     permission_classes = [IsAuthenticated, ]
-    serializer_class = serializers.FullInfoDeveloperSerializer
+    serializer_class = serializers.DeveloperProfileSerializer
 
 
     def list(self, request):
         try:
             devs = Developer.objects.get(user=self.request.user)
-            serializer_class = serializers.FullInfoDeveloperSerializer(devs, many=False)
+            serializer_class = serializers.DeveloperProfileSerializer(devs, many=False)
             return Response(serializer_class.data)
         except:
             serializer_class = serializers.UserSerializer(self.request.user, many=False)

@@ -43,11 +43,11 @@ class DeveloperProfilesByStacks(RetrieveModelMixin,
 class DeveloperProfiles(RetrieveModelMixin,
                         ListModelMixin,
                         viewsets.GenericViewSet):
-    serializer_class = serializers.DevelopersSerializer
+    serializer_class = serializers.FullInfoDeveloperSerializer
     permission_classes = [AllowAny, ]
     queryset = models.Developer.objects.filter(user__role=2)
     serializer_action_classes = {
-        'list': serializers.DevelopersSerializer,
+        'list': serializers.FullInfoDeveloperSerializer,
         'retrieve': serializers.FullInfoDeveloperSerializer
     }
     filter_backends = [DjangoFilterBackend, searchers.SearchFilter, ]
@@ -62,13 +62,14 @@ class DeveloperProfiles(RetrieveModelMixin,
             return super().get_serializer_class()
 
 
-class DeveloperContacts(viewsets.ViewSet):
+class DeveloperContacts(viewsets.ViewSet, DeveloperPagination):
     permission_classes = [IsAuthenticated, ]
     queryset = DevClientInContact.objects.all()
     def list(self, request):
         queryset = DevClientInContact.objects.filter(dev_id__user=self.request.user)
+        queryset = self.paginate_queryset(queryset, request, view=self)
         serializer_class = serializers.DeveloperContactsSerializer(queryset, many=True)
-        return Response(serializer_class.data)
+        return self.get_paginated_response(serializer_class.data)
 
     def retrieve(self, request, pk=None):
         queryset = DevClientInContact.objects.get(id=pk)

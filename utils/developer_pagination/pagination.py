@@ -43,7 +43,7 @@ class DeveloperPagination(pagination.PageNumberPagination):
 
 
 MAX_FILE_SIZE = 1024000
-ALLOWED_EXTENSIONS = ['.jpg', '.png']
+ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png']
 
 def developer_photos_size(value):
     if value.size > MAX_FILE_SIZE:

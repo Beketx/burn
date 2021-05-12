@@ -117,6 +117,24 @@ class UserProjects(viewsets.ModelViewSet):
         if self.action == 'create':
             return serializers.ProjectUserPost
 
+class UserDevProjects(viewsets.ModelViewSet):
+    queryset = models.BurnProjectDevelopers.objects.all()
+    serializer_class = serializers.ProjectUser
+    pagination_class = DeveloperPagination
+    permission_classes = [IsAuthenticated, ]
+
+    def get_queryset(self):
+        burn_project = models.BurnProjectDevelopers.objects.filter(burn_project_id__user_id=self.request.user)
+        return burn_project
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return serializers.ProjectUser
+        if self.action == 'retrieve':
+            return serializers.ProjectUser
+        if self.action == 'create':
+            return serializers.ProjectUserPost
+
 class ArchiveProject(viewsets.ModelViewSet):
     queryset = models.ArchiveProject.objects.all()
     serializer_class = serializers.ProjectDelSerializer
