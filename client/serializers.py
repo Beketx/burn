@@ -57,7 +57,7 @@ class ProjectDelSerializer(serializers.ModelSerializer):
 
 class ProjectAllSerializer(ProjectSerializer):
     file_doc = serializers.FileField()
-    stack_id =  serializers.CharField(write_only=True)
+    stacks_id =  serializers.CharField(write_only=True)
     stacks = serializers.SerializerMethodField("get_stacks")
     class Meta(ProjectSerializer.Meta):
         fields = ProjectSerializer.Meta.fields + ('file_doc', 'stacks', 'stacks_id')
