@@ -53,7 +53,7 @@ class AddFavorite(APIView, DeveloperPagination):
     def post(self, request):
         try:
             data = request.data
-            users = request.user
+            users = self.request.user
             dev_id = data["developer_id"]
             isFav = data["is_favorite"]
             if Developer.objects.get(id=dev_id):
