@@ -437,7 +437,7 @@ class GetProfile(viewsets.ViewSet):
             serializer_class = serializers.DeveloperProfileSerializer(devs, many=False)
             return Response(serializer_class.data)
         except:
-            serializer_class = serializers.UserSerializer(self.request.user, many=False)
+            serializer_class = serializers.UserDevSerializer(self.request.user, many=False)
             return Response({
                 "id": self.request.user.id,
                 "user": serializer_class.data
