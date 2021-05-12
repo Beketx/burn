@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from developer.models import Developer
+from developer.models import Developer, Stacks
 from developer.serializers import DevelopersSerializer, DeveloperFIOSerializer
 from . import models
 from ast import literal_eval
@@ -91,6 +91,8 @@ class ProjectDevelopers(serializers.ModelSerializer):
     developer_id = DeveloperFIOSerializer(many=False,
                                         read_only=True)
     developers_id = serializers.SerializerMethodField('get_user')
+    price = serializers.IntegerField(write_only=True)
+    stacks_id = serializers.IntegerField(write_only=True)
     class Meta:
         model = models.BurnProjectDevelopers
         fields = (
@@ -98,6 +100,8 @@ class ProjectDevelopers(serializers.ModelSerializer):
                   'accept_bool',
                   'developer_id',
                   'developers_id',
+                  'price',
+                  'stacks_id',
                   'burn_project_id',
                   )
     def create(self, validated_data):
@@ -106,11 +110,12 @@ class ProjectDevelopers(serializers.ModelSerializer):
         if request and hasattr(request, "user"):
             user = request.user
         dev = Developer.objects.get(user=user)
+        stack = Stacks.objects.get(id=validated_data['stacks_id'])
         instance = models.BurnProjectDevelopers.objects.create(
             price=validated_data['price'],
             developer_id=dev,
             burn_project_id=validated_data['burn_project_id'],
-            stacks_id=validated_data['stacks_id']
+            stacks_id=stack
         )
         return instance
 
