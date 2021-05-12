@@ -137,6 +137,7 @@ class ProjectUser(serializers.ModelSerializer):
         fields = ('id',
                   'accept_bool',
                   'developer_id',
+                  'stacks_id',
                   'user_id',
                   'burn_project_id')
 
