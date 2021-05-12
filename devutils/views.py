@@ -59,7 +59,8 @@ class AddFavorite(APIView, DeveloperPagination):
             if Developer.objects.get(id=dev_id):
                 dev = Developer.objects.get(id=dev_id)
                 logger.debug('developer id exist')
-            if isFav == True:
+            if isFav==True:
+                logger.debug('qqqqTrue')
                 if Favorites.objects.filter(developer=dev, user=users).exists() == False:
                     logger.debug('if not isFavTrue')
                     Favorites.objects.create(developer=dev, favorite_bool=isFav, user=users)
