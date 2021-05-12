@@ -90,7 +90,7 @@ class ProjectAllSerializer(ProjectSerializer):
 class ProjectDevelopers(serializers.ModelSerializer):
     developer_id = DeveloperFIOSerializer(many=False,
                                         read_only=True)
-    developers_id = serializers.SerializerMethodField('get_user')
+    user_id = serializers.SerializerMethodField('get_user')
     price = serializers.IntegerField(write_only=True)
     stacks = serializers.IntegerField(write_only=True)
     class Meta:
@@ -99,7 +99,7 @@ class ProjectDevelopers(serializers.ModelSerializer):
                   'id',
                   'accept_bool',
                   'developer_id',
-                  'developers_id',
+                  'user_id',
                   'price',
                   'stacks_id',
                   'stacks',
