@@ -64,7 +64,7 @@ class BurnProject(viewsets.ModelViewSet):
         if self.action == 'list':
             return serializers.ProjectSerializer
         if self.action == 'retrieve':
-            return serializers.ProjectDelSerializer
+            return serializers.ProjectAllSerializer
         return serializers.ProjectAllSerializer
 
     # def get_permissions(self):
