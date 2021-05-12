@@ -92,7 +92,7 @@ class ProjectDevelopers(serializers.ModelSerializer):
                                         read_only=True)
     developers_id = serializers.SerializerMethodField('get_user')
     price = serializers.IntegerField(write_only=True)
-    stacks_id = serializers.IntegerField(write_only=True)
+    stacks = serializers.IntegerField(write_only=True)
     class Meta:
         model = models.BurnProjectDevelopers
         fields = (
@@ -102,6 +102,7 @@ class ProjectDevelopers(serializers.ModelSerializer):
                   'developers_id',
                   'price',
                   'stacks_id',
+                  'stacks',
                   'burn_project_id',
                   )
     def create(self, validated_data):
@@ -110,7 +111,7 @@ class ProjectDevelopers(serializers.ModelSerializer):
         if request and hasattr(request, "user"):
             user = request.user
         dev = Developer.objects.get(user=user)
-        stack = Stacks.objects.get(id=validated_data['stacks_id'])
+        stack = Stacks.objects.get(id=validated_data['stacks'])
         instance = models.BurnProjectDevelopers.objects.create(
             price=validated_data['price'],
             developer_id=dev,
