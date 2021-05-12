@@ -43,11 +43,11 @@ class DeveloperProfilesByStacks(RetrieveModelMixin,
 class DeveloperProfiles(RetrieveModelMixin,
                         ListModelMixin,
                         viewsets.GenericViewSet):
-    serializer_class = serializers.FullInfoDeveloperSerializer
+    serializer_class = serializers.DevelopersSerializer
     permission_classes = [AllowAny, ]
     queryset = models.Developer.objects.filter(user__role=2)
     serializer_action_classes = {
-        'list': serializers.FullInfoDeveloperSerializer,
+        'list': serializers.DevelopersSerializer,
         'retrieve': serializers.FullInfoDeveloperSerializer
     }
     filter_backends = [DjangoFilterBackend, searchers.SearchFilter, ]
