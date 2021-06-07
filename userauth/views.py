@@ -1,5 +1,6 @@
 import datetime
 import hashlib
+import json
 import os
 import random
 
@@ -267,6 +268,8 @@ class RegistrationStepFour(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+import json
+
 class RegistrationStepFive(APIView):
     """
     Registers a new user.
@@ -327,12 +330,43 @@ class RegistrationStepFive(APIView):
             payload = {
                 'document': image.image
             }
-            url = 'http://138.68.184.57:5000/compare-faces'
+            url = 'http://138.68.184.57/compare-faces'
             result = requests.post(url, files=payload)
             if result.status_code == 200:
-                return Response(result)
+                text = json.loads(result.text)
+                if text['error'] != '':
+                    score = text['score']
+                    if 0.5 <= score:
+                        pass
+                    else:
+                        res = {
+                            "status": False,
+                            "detail": "Face is not valid",
+                            "user-id": user.id
+                        }
+                        return Response(
+                            res,
+                            status=status.HTTP_409_CONFLICT,
+                        )
+                else:
+                    res = {
+                        "status": False,
+                        "detail": text['error'],
+                        "user-id": user.id
+                    }
+                    return Response(
+                        res,
+                        status=status.HTTP_406_NOT_ACCEPTABLE,
+                    )
             else:
-                return Response({"Status": 404})
+                return Response(
+                    {
+                        "status": False,
+                        "detail": "Does not connect to ML",
+                        "user-id": user.id
+                    }
+                )
+
             logging.error('first message saved')
 
             """
@@ -357,19 +391,19 @@ class RegistrationStepFive(APIView):
             # images.save()
             image = DeveloperImages.objects.create(
                                     developer=developer,
-                                    image = request.FILES['front_photo'],
+                                    image = request.FILES['avatar'],
                                     image_type = ImageType.objects.get(type_id=2)
             )
-            payload = {
-                'document': image.image
-            }
-            url = 'http://138.68.184.57:5000/compare-faces'
-            result = requests.post(url, files=payload)
-            if result.status_code == 200:
-                return Response(result)
-            else:
-                return Response({"Status": 404})
-            logging.error('second message saved')
+            # payload = {
+            #     'document': image.image
+            # }
+            # url = 'http://138.68.184.57/compare-faces'
+            # result = requests.post(url, files=payload)
+            # if result.status_code == 200:
+            #     pass
+            # else:
+            #     return Response({"Status": 404})
+            # logging.error('second message saved')
 
             """
             Image passport
@@ -393,18 +427,46 @@ class RegistrationStepFive(APIView):
             # images.save()
             image = DeveloperImages.objects.create(
                                     developer=developer,
-                                    image=request.FILES['front_photo'],
+                                    image=request.FILES['passport'],
                                     image_type=ImageType.objects.get(type_id=3)
             )
             payload = {
                 'document': image.image
             }
-            url = 'http://138.68.184.57:5000/compare-faces'
+            url = 'http://138.68.184.57/get-iin'
             result = requests.post(url, files=payload)
             if result.status_code == 200:
-                return Response(result)
+                text = json.loads(result.text)
+                if text['error'] != '':
+                    iin = text['iin']
+                    if user.iin != iin:
+                        res = {
+                            "status": False,
+                            "detail": "IIN does not satisfy",
+                            "user-id": user.id
+                        }
+                        return Response(
+                            res,
+                            status=status.HTTP_406_NOT_ACCEPTABLE,
+                        )
+                else:
+                    res = {
+                        "status": False,
+                        "detail": text['error'],
+                        "user-id": user.id
+                    }
+                    return Response(
+                        res,
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
             else:
-                return Response({"Status": 404})
+                return Response(
+                    {
+                        "status": False,
+                        "detail": "Does not connect to ML",
+                        "user-id": user.id
+                    }
+                )
             logging.error('third message saved')
             res = {
                 "status": True,

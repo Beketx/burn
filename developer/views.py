@@ -83,6 +83,17 @@ class DeveloperContacts(viewsets.ViewSet, DeveloperPagination):
         serializer.save()
         return Response(serializer.data)
 
+    def create(self, request):
+        data = request.data
+        try:
+            instance = self.queryset.get(id=data['id'], dev_id__user=self.request.user)
+        except Exception as e:
+            raise e
+        instance.dev_perm = data['dev_perm']
+        instance.save()
+        return Response( {"status": True, "detail": "Success"})
+
+
 """
 REVIEW
 """

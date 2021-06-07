@@ -24,7 +24,7 @@ class UserAdmin(BaseUserAdmin):
 			),
 		)
 	# exclude = ('username', )
-	list_display = ('email', 'name', 'surname', 'last_login', 'phone','gender')
+	list_display = ('email', 'name', 'iin', 'last_login', 'phone','gender')
 	list_filter = ('is_superuser', 'is_active', 'groups')
 	search_fields = ('email',)
 	ordering = ('email',)
