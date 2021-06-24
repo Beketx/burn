@@ -1,4 +1,5 @@
 import hashlib
+import json
 import os
 import requests
 from rest_framework import viewsets
@@ -34,10 +35,14 @@ class ML(APIView):
             payload = {
                 'document': y.image
             }
-            url = 'http://138.68.184.57:5000/compare-faces'
+            url = 'http://138.68.184.57/compare-faces'
             result = requests.post(url, files=payload)
             if result.status_code == 200:
-                return Response(result)
+                for i in result:
+                    x = str(i)
+                    y = x.split(" ")
+                print(json.dumps(y[0]))
+                return Response(y)
             else:
                 return Response({"Status": 404})
         except Exception as e:

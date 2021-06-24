@@ -6,15 +6,12 @@ from django.dispatch import receiver
 from developer.models import Developer, DeveloperService, Favorites
 from userauth.models import User
 
+logger = logging.getLogger(__name__)
+
 @receiver(post_save, sender=Developer)
 def developer_created(sender, instance, created, **kwargs):
     if created:
-        DeveloperService.objects.create(
-            service_title=instance.service_title,
-            service_description=instance.service_description,
-            price=instance.price,
-            price_fix=instance.price_fix
-        )
+        logger.debug("Developer created")
 
 @receiver(post_delete, sender=Favorites)
 def favorite_bool(sender, instance, **kwargs):

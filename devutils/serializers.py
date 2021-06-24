@@ -27,3 +27,9 @@ class SkillsSerializer(CitiesSerializer):
         fields = CitiesSerializer.Meta.fields
     # def to_representation(self, instance):
     #     return instance.title
+
+class SkillModel(serializers.ModelSerializer):
+
+    class Meta:
+        model = Skills
+        fields = ['id', 'title',]

@@ -3,11 +3,13 @@ import logging
 from django.core.paginator import InvalidPage
 from django.db.models import Q
 from rest_framework import viewsets, status
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated,\
                                        IsAuthenticatedOrReadOnly, \
                                        AllowAny
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,15 +20,91 @@ from userauth.models import User
 from utils.developer_pagination.pagination import DeveloperPagination
 
 logger = logging.getLogger(__name__)
+@api_view(['GET'])
+def stacks_list(request):
+    if request.method == 'GET':
+        logger.debug('In get')
+
+        favorites = Stacks.objects.all()
+        serializer = serializers.StacksSerializer(favorites, many=True)
+
+        return Response(serializer.data)
+
+@api_view(['GET'])
+def skills_list(request):
+    if request.method == 'GET':
+        logger.debug('In get')
+
+        favorites = Skills.objects.all()
+        serializer = serializers.SkillsSerializer(favorites, many=True)
+
+        return Response(serializer.data)
+
+    # elif request.method == 'POST':
+    #     logger.debug('In POST')
+    #
+    #     serializer = serializers.FavouritesSerializer1(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response({'error': serializer.errors},
+    #                     status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# @api_view(['GET', 'PUT', 'DELETE'])
+# def favorites_detail(request, favourite_id):
+#     try:
+#         Stacks.objects.get(id=favourite_id)
+#     except Stacks.DoesNotExist as e:
+#         return Response({'error': str(e)})
+#
+#     if request.method == 'GET':
+#         serializer = serializers.StacksSerializer(favorite)
+#         return Response(serializer.data)
+
+    # elif request.method == 'PUT':
+    #     serializer = serializers.FavouritesSerializer1(instance=favorite, data=request.data)
+    #     if serializer.is_valid():
+    #         logger.info('DATA SAVED')
+    #
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response({'error': serializer.errors})
+    #
+    # elif request.method == 'DELETE':
+    #     favorite.delete()
+    #
+    #     return Response({'deleted': True})
+
 class StacksView(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = serializers.StacksSerializer
     queryset = Stacks.objects.all()
     permission_class = [AllowAny, ]
 
+from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+
+
 class SkillsView(ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
-    serializer_class = serializers.SkillsSerializer
+    serializer_class = serializers.SkillModel
     queryset = Skills.objects.all()
     permission_class = [AllowAny, ]
+
+    def get_queryset(self):
+        if 'y' in cache:
+            queryset = cache.get('x')
+            serializer = serializers.SkillModel(queryset)
+            re = JSONRenderer().render(serializer.data)
+            return re
+        else:
+            queryset = self.queryset.all()
+            # serializer = self.serializer_class(queryset)
+            cache.set("y", queryset, timeout=CACHE_TTL)
+            print(cache)
+            return queryset
 
 class AddFavorite(APIView, DeveloperPagination):
     """
